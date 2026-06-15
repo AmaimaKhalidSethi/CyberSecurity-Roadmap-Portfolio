@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 2: Types of Cyber Threats — Foundational Mastery</title>
+</head>
+<body style="line-height: 1.25; color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; background-color: #ffffff;">
+
+    <h1 style="border-bottom: 2px solid #333333; padding-bottom: 10px; margin-top: 0;">Day 2: Types of Cyber Threats</h1>
+    
+    <p style="margin-bottom: 24px;">
+        In a modern enterprise ecosystem, threats arrive from multiple vectors, targeting human, software, and hardware configurations. The modern threat landscape has evolved from simple, self-replicating scripts into highly organized, financially motivated cybercrime syndicates and state-sponsored Advanced Persistent Threats (APTs). To build resilient defense-in-depth strategies, security professionals must dissect these threats down to their raw execution mechanics. Understanding how malware spreads, how social engineers exploit human trust, and how network-level attacks bypass traditional boundaries is the only way defensive engineers can design proactive, preventative, and predictive security architectures.
+    </p>
+
+    <h2>1. Malware Deep-Dive & Mechanics</h2>
+    <p style="margin-bottom: 15px;">
+        Malware (malicious software) is an umbrella term representing any code engineered to compromise system availability, steal sensitive data, or degrade infrastructure performance. The table below details the most common malware classes, their vectors, behaviors, and enterprise defenses:
+    </p>
+
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 25px; border-color: #cccccc;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+                <th style="text-align: left; width: 15%;">Malware Type</th>
+                <th style="text-align: left; width: 25%;">Technical Delivery Vector</th>
+                <th style="text-align: left; width: 35%;">Operational Behavior</th>
+                <th style="text-align: left; width: 25%;">Mitigation Strategy</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Virus</strong></td>
+                <td>User action (e.g., executing a contaminated email attachment or running an infected .exe file).</td>
+                <td>Attaches its malicious payload to a legitimate host file or executable. When the host is run, the virus executes and attempts to spread its code to other local files.</td>
+                <td>Signature-based Antivirus, Endpoint Detection and Response (EDR), and routine system scanning.</td>
+            </tr>
+            <tr>
+                <td><strong>Worm</strong></td>
+                <td>Exploits unpatched network vulnerabilities or open ports directly (requires no human interaction).</td>
+                <td>Self-replicating program that actively scans the local network and the internet for vulnerable machines. Rapidly consumes bandwidth and system resources.</td>
+                <td>Vulnerability management, network segmentation, and Host-based Intrusion Prevention Systems (HIPS).</td>
+            </tr>
+            <tr>
+                <td><strong>Trojan</strong></td>
+                <td>Social engineering, malicious downloads, repackaged software, or drive-by downloads.</td>
+                <td>Disguises itself as legitimate utility software (e.g., a free PDF converter). Once executed, it secretly installs a backdoor, giving attackers remote access.</td>
+                <td>Application whitelisting (AppLocker), User Account Control (UAC) enforcement, and user awareness training.</td>
+            </tr>
+            <tr>
+                <td><strong>Ransomware</strong></td>
+                <td>Phishing links, exploited RDP ports, compromised software update channels, or drive-by-downloads.</td>
+                <td>Encrypts user data using strong asymmetric/symmetric key combinations (e.g., AES-256 + RSA-4096), leaving the OS intact but rendering data completely unreadable until a ransom is paid.</td>
+                <td>Immutable offline/cloud backups, robust endpoint behavioral analysis, and strict network-share permission schemes.</td>
+            </tr>
+            <tr>
+                <td><strong>Spyware</strong></td>
+                <td>Bundled software installations, malicious web browser extensions, or malicious scripts.</td>
+                <td>Runs silently in the background, logging keystrokes (keylogger), capturing screen activities, harvesting credentials, and exfiltrating tracking data to an external command-and-control (C2) server.</td>
+                <td>Browser security policies, anti-spyware software, regular process monitoring, and multi-factor authentication.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Operational Lab Guide: Inspecting Suspicious Files with VirusTotal</h3>
+    <p>
+        To safely investigate potentially malicious files without executing them on a sensitive production host, analysts leverage cryptographic hashes and sandboxed multi-engine scanners like VirusTotal. Follow these steps to perform an analysis:
+    </p>
+    <ol style="margin-bottom: 15px;">
+        <li><strong>Acquire the Cryptographic Hash:</strong> Instead of uploading an entire sensitive document (which could leak private enterprise data to public repositories), extract the SHA-256 hash using a terminal.
+            <br><em>On Windows (PowerShell):</em> <code>Get-FileHash .\filename.ext -Algorithm SHA256</code>
+            <br><em>On Linux/macOS:</em> <code>sha256sum filename.ext</code>
+        </li>
+        <li><strong>Query VirusTotal:</strong> Navigate to <a href="https://www.virustotal.com" target="_blank" style="color: #0066cc;">VirusTotal</a>, select the "Search" tab, paste the generated SHA-256 hash, and execute the search.</li>
+        <li><strong>Analyze the Verdict:</strong> Evaluate the detections. Look at the "Detection" tab to see if major security vendors flag it. Inspect the "Behavior" tab to analyze sandbox execution traits, such as registry keys modified, outbound network requests, and files created.</li>
+    </ol>
+
+    
+
+    <h2>2. Social Engineering & Network-Level Layer Attacks</h2>
+    
+    <h3>Social Engineering Vector Dynamics</h3>
+    <p>
+        Humans remain the weakest link in any perimeter defense strategy. Attackers exploit psychological triggers (urgency, authority, fear, consensus) to bypass multi-million dollar firewalls.
+    </p>
+    <ul>
+        <li><strong>Phishing:</strong> Broad, mass-scale campaigns targeting generic audiences with spoofed emails designed to harvest login credentials or distribute malicious payloads.</li>
+        <li><strong>Spear-Phishing:</strong> Highly targeted, customized attacks directed at a specific individual or department. Attackers gather background reconnaissance (via LinkedIn, corporate sites) to draft believable contexts (e.g., an invoice from a known vendor).</li>
+        <li><strong>Whaling:</strong> A subset of spear-phishing specifically targeting high-profile targets such as CEOs, CFOs, or Board Members to facilitate high-value financial theft or unauthorized data access.</li>
+    </ul>
+
+    <h3>Email Header Analysis: Unmasking Phishing</h3>
+    <p>
+        A phishing email may spoof the visual "From" field, but the raw text headers do not lie. When investigating a suspicious email, analysts evaluate three critical security mechanisms:
+    </p>
+    <ol>
+        <li><strong>SPF (Sender Policy Framework):</strong> A DNS record listing exactly which mail servers are authorized to send email on behalf of a domain.</li>
+        <li><strong>DKIM (DomainKeys Identified Mail):</strong> Adds a cryptographic signature to the header of outgoing emails, proving the email was actually sent by the domain owner and has not been altered in transit.</li>
+        <li><strong>DMARC (Domain-based Message Authentication, Reporting, and Conformance):</strong> A policy framework instructing receiving servers on what to do if an incoming email fails SPF or DKIM checks (e.g., <code>p=none</code>, <code>p=quarantine</code>, or <code>p=reject</code>).</li>
+    </ol>
+
+    <h3>Network-Level Exploits</h3>
+    <p>
+        These attacks target the transport, routing, and switching layers of enterprise networks to compromise confidentiality and availability.
+    </p>
+    <ul>
+        <li><strong>Man-in-the-Middle (MitM) Attacks:</strong> The attacker intercepts, alters, or injects traffic between two communicating endpoints without their knowledge. This is commonly executed via <strong>ARP Spoofing</strong> (tricking a local switch into binding the attacker's MAC address with a legitimate IP gateway) or <strong>DNS Spoofing</strong> (poisoning a resolver cache to route traffic to malicious servers).</li>
+        <li><strong>Denial of Service (DoS) & Distributed Denial of Service (DDoS):</strong> Flooding a system or network infrastructure with massive volumes of traffic (such as SYN floods, UDP amplification, or HTTP GET requests) to overwhelm resources, consume all available bandwidth, and deny service to authorized users.</li>
+    </ul>
+
+    <h2>3. Learning Objectives & High-Yield Study Guide</h2>
+    <p>
+        Focus your 1.5-hour study block on mastering these core threat models to prepare for incident response tasks and job interviews:
+    </p>
+
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 25px; border-color: #cccccc;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+                <th style="text-align: left; width: 15%;">Time Block</th>
+                <th style="text-align: left; width: 30%;">Topic / Concept</th>
+                <th style="text-align: left; width: 35%;">Key Areas to Memorize & Understand</th>
+                <th style="text-align: left; width: 20%;">Interview Relevance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>00:00 - 00:30</strong></td>
+                <td><strong>Malware Classifications</strong></td>
+                <td>Differentiate between Viruses, Worms, and Trojans. Memorize the execution mechanism of Ransomware (encryption, key retrieval) and how Worms self-replicate without human intervention.</td>
+                <td>"Can you explain the main difference between a worm and a virus, and why worms pose a greater risk to internal networks?"</td>
+            </tr>
+            <tr>
+                <td><strong>00:30 - 01:00</strong></td>
+                <td><strong>Social Engineering & Headers</strong></td>
+                <td>Understand SPF, DKIM, and DMARC alignments. Be able to explain how SPF records restrict IP ranges and how a DKIM failure indicates potential spoofing or tampering.</td>
+                <td>"How do SPF and DKIM work together to prevent email spoofing, and what happens when an email fails DMARC verification?"</td>
+            </tr>
+            <tr>
+                <td><strong>01:00 - 01:30</strong></td>
+                <td><strong>Network Exploits (MitM/DDoS)</strong></td>
+                <td>Study ARP Poisoning mechanics and how attackers place themselves inline. Memorize mitigation steps (Dynamic ARP Inspection - DAI, and using TLS to encrypt packet payloads).</td>
+                <td>"Explain how an attacker executes a Man-in-the-Middle attack at the local link layer using ARP spoofing."</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Industry Insights & SOC Analyst Perspective</h2>
+    <p>
+        In a corporate Security Operations Center (SOC), a Tier 1 Analyst spends their shift triaging alerts originating from EDR (Endpoint Detection and Response) agents, Web Proxies, Email Gateways, and Network Firewalls. Standardizing this data requires structured security frameworks.
+    </p>
+    <p>
+        <strong>1. Leveraging the Cyber Kill Chain:</strong> Created by Lockheed Martin, this framework tracks the stages of a cyberattack. Analysts use this to understand *how far* an adversary progressed:
+    </p>
+    <ol>
+        <li><em>Reconnaissance:</em> Gathering target information (e.g., harvesting corporate emails).</li>
+        <li><em>Weaponization:</em> Pairing an exploit with a payload (e.g., embedding malware in a PDF).</li>
+        <li><em>Delivery:</em> Transmitting the weaponized file (e.g., sending a phishing email).</li>
+        <li><em>Exploitation:</em> Triggering the malicious code to run on a vulnerable system.</li>
+        <li><em>Installation:</em> Establishing a persistent backdoor on the compromised system.</li>
+        <li><em>Command & Control (C2):</em> Opening a remote communications channel for the attacker.</li>
+        <li><em>Actions on Objectives:</em> The attacker executes their goal (e.g., stealing customer data).</li>
+    </ol>
+    <p>
+        If a SOC analyst stops an attack at the <em>Delivery</em> phase (blocking the phishing email at the gateway), the threat is fully neutralized. If an alert fires during the <em>Command & Control</em> phase, the analyst knows the host is compromised and must execute immediate network isolation protocols.
+    </p>
+    <p>
+        <strong>2. Utilizing the MITRE ATT&CK® Framework:</strong> While the Cyber Kill Chain is linear, MITRE ATT&CK is a deep, matrix-driven KB (Knowledge Base) mapping real-world adversary tactics, techniques, and procedures (TTPs). 
+    </p>
+    <ul>
+        <li>When an alert is triggered indicating a registry key was modified to run a script at startup, the analyst checks the MITRE ATT&CK matrix: This maps to the tactic <strong>Tactics: Persistence (TA0003)</strong> and the technique <strong>Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder (T1547.001)</strong>.</li>
+        <li>By classifying alerts based on MITRE ATT&CK codes, SOC teams can quickly identify patterns, attribute alerts to known threat actors, and update detection rules on their SIEM to patch structural gaps in defensive postures.</li>
+    </ul>
+
+</body>
+</html>
