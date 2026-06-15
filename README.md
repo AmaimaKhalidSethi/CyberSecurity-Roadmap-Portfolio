@@ -15,12 +15,17 @@ Welcome to my cybersecurity portfolio! This repository serves as the central rep
 ## 📊 120-Day Journey Progress Matrix
 
 | Phase | Core Focus | Focus Period | Status |
-| :--- | :--- | :--- | :--- |
-| **Phase 1** | Cybersecurity Fundamentals & Threat Landscapes | Days 01 - 30 | 🔄 In Progress |
-| **Phase 2** | Enterprise Networking & Linux Security Architecture | Days 31 - 60 | ⏳ Pending |
-| **Phase 3** | Threat Detection, SIEM Operations, & Log Analysis | Days 61 - 90 | ⏳ Pending |
-| **Phase 4** | Incident Response, Digital Forensics, & Capstone Labs | Days 91 - 120 | ⏳ Pending |
+| ----- | ----- | ----- | ----- |
+| *Phase 1* | Cybersecurity Fundamentals & Threat Landscapes | Days 01 - 30 | 🔄 In Progress |
+| *Phase 2* | Enterprise Networking & Linux Security Architecture | Days 31 - 60 | ⏳ Pending |
+| *Phase 3* | Threat Detection, SIEM Operations, & Log Analysis | Days 61 - 90 | ⏳ Pending |
+| *Phase 4* | Incident Response, Digital Forensics, & Capstone Labs | Days 91 - 120 | ⏳ Pending |
 
+### 📂 Quick Links to Live Modules
+* 🌐 [Day 1: Cybersecurity Fundamentals](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_1_cybersecurity_fundamentals_foundational_mastery.html)
+* 🌐 [Day 2: Types of Cyber Threats](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_2_types_of_cyber_threats_foundational_mastery.html)
+* 📊 [Threat Analysis Infographic](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/threat_analysis_infographic.html)
+  
 ---
 
 ## 🛠️ Toolbelt & Technical Proficiencies
