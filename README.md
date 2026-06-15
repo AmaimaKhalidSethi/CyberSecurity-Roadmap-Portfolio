@@ -25,6 +25,7 @@ Welcome to my cybersecurity portfolio! This repository serves as the central rep
 * 🌐 [Day 1: Cybersecurity Fundamentals](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_1_cybersecurity_fundamentals_foundational_mastery.html)
 * 🌐 [Day 2: Types of Cyber Threats](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_2_types_of_cyber_threats_foundational_mastery.html)
 * 📊 [Threat Analysis Infographic](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/threat_analysis_infographic.html)
+* 🌐 [Day 3: Virtualization & Lab Setup](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_3_virtualization_lab_setup.html)
   
 ---
 
