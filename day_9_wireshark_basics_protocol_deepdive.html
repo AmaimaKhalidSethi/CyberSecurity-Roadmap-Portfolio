@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Day 09: Networking Fundamentals III – Wireshark Basics & Protocol Deep Dive</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        header {
+            border-bottom: 3px solid #34495e;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        .roadmap-badge {
+            background-color: #e67e22;
+            color: white;
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin: 0;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #2980b9;
+            border-left: 5px solid #2980b9;
+            padding-left: 12px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        h3 {
+            font-size: 1.2rem;
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        .filter-box {
+            background-color: #eef2f7;
+            border-left: 4px solid #3498db;
+            font-family: "Courier New", Courier, monospace;
+            padding: 12px 16px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.95rem;
+            color: #2c3e50;
+        }
+        .step-card {
+            background-color: #fafbfc;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .step-card h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.05rem;
+            border-bottom: 1px solid #e1e4e8;
+            padding-bottom: 8px;
+        }
+        .packet-structure {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+        }
+        .packet-row {
+            display: table-row;
+        }
+        .packet-cell {
+            display: table-cell;
+            border: 1px solid #bdc3c7;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .layer-5 { background-color: #fadbd8; color: #78281f; }
+        .layer-4 { background-color: #d4efdf; color: #145a32; }
+        .layer-3 { background-color: #d6eaf8; color: #1b4f72; }
+        .layer-2 { background-color: #fcf3cf; color: #7d6608; }
+        
+        .pro-tip {
+            background-color: #e8f8f5;
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .pro-tip strong {
+            color: #117a65;
+        }
+        code {
+            background-color: #f1f2f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9rem;
+        }
+        .anatomy-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .anatomy-table th, .anatomy-table td {
+            border: 1px solid #dcdde1;
+            padding: 12px;
+            text-align: left;
+        }
+        .anatomy-table th {
+            background-color: #f5f6fa;
+            color: #2f3640;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="roadmap-badge">Day 09 of 120</span>
+        <h1>Networking Fundamentals III – Wireshark Basics</h1>
+        <p class="subtitle">An In-Depth Blueprint for Packet Analysis, Display Filters, and Protocol Inspection</p>
+    </header>
+
+    <h2>1. Foundations of Packet Analysis & OSI Encapsulation</h2>
+    <p>
+        Before navigating Wireshark's interface, it is critical to understand how data moves across a network. Data transmission relies on <strong>encapsulation</strong>. When an application generates data, it passes down the Open Systems Interconnection (OSI) model stack, with each layer wrapping the upper-layer data with its own header controls.
+    </p>
+    <p>
+        In Wireshark, this mapping is visualized directly in the <strong>Packet Details Pane</strong>. Each expansion block represents a specific layer of the network stack, structured outward from physical to application layers:
+    </p>
+
+    <div class="packet-structure">
+        <div class="packet-row">
+            <div class="packet-cell layer-2" style="width: 20%;">Ethernet Header (L2)<br><small>MAC Addresses</small></div>
+            <div class="packet-cell layer-3" style="width: 25%;">IP Header (L3)<br><small>Source/Dest IPs & TTL</small></div>
+            <div class="packet-cell layer-4" style="width: 25%;">TCP/UDP Header (L4)<br><small>Ports, Sequence Nos.</small></div>
+            <div class="packet-cell layer-5" style="width: 30%;">Application Data (L5-L7)<br><small>DNS, HTTP, TLS Payload</small></div>
+        </div>
+    </div>
+
+    <p>
+        When troubleshooting or threat hunting, a security analyst strips away these layers (decapsulation) inside Wireshark to isolate anomalies, pinpoint communication failures, or extract signs of malicious compromise.
+    </p>
+
+    <h2>2. Mastering Wireshark Display Filters</h2>
+    <p>
+        Live networks process millions of packets per minute. Finding the specific indicators of compromise (IoCs) requires mastering Wireshark's filtering syntax. Display filters do not discard packets; they hide irrelevant data from view.
+    </p>
+    
+    <h3>Logical Operators</h3>
+    <ul>
+        <li><code>and</code> / <code>&&</code> : Both conditions must be met (e.g., <code>ip.addr == 10.0.0.5 && tcp.port == 80</code>)</li>
+        <li><code>or</code> / <code>||</code> : Either condition can be met (e.g., <code>http || dns</code>)</li>
+        <li><code>not</code> / <code>!</code> : Excludes conditions (e.g., <code>!arp && !ssdp</code>)</li>
+    </ul>
+
+    <h3>Essential Threat Hunting Display Filters</h3>
+    
+    <div class="step-card">
+        <h4>Isolating Specific Host Communications</h4>
+        <p>To view all traffic associated with a suspicious IP address, regardless of whether it is the sender or receiver:</p>
+        <div class="filter-box">ip.addr == 192.168.1.50</div>
+        <p>To isolate directional traffic (e.g., assessing an outbound data exfiltration attempt):</p>
+        <div class="filter-box">ip.src == 192.168.1.50 and ip.dst == 203.0.113.5</div>
+    </div>
+
+    <div class="step-card">
+        <h4>Filtering by Layer 4 Ports</h4>
+        <p>Isolate specific services such as non-standard HTTP configurations or active connections to known ports:</p>
+        <div class="filter-box">tcp.port == 80 or tcp.port == 443</div>
+        <p>To search for traffic targeting a specific destination port that might indicate reconnaissance scanning:</p>
+        <div class="filter-box">tcp.dstport == 22</div>
+    </div>
+
+    <div class="step-card">
+        <h4>Finding Specific Content and String Matching</h4>
+        <p>Locate specific text patterns across unencrypted packets (e.g., hunting for an exploit string, specific user-agent, or unauthorized commands):</p>
+        <div class="filter-box">frame contains "password"</div>
+        <p>Using regular expressions to isolate variations of strings across payloads:</p>
+        <div class="filter-box">matches "select.*from"</div>
+    </div>
+
+    <h2>3. Protocol Deep Dive: What to Search & How to Analyze</h2>
+    <p>
+        Investigating network activity requires knowing exactly what normal communication looks like versus how adversaries abuse protocols. Below is a detailed breakdown of how to isolate, inspect, and analyze core network protocols.
+    </p>
+
+    <!-- DNS SECTION -->
+    <h3>A. Domain Name System (DNS)</h3>
+    <p>
+        <strong>What to Search:</strong> Type <code>dns</code> into the display filter box. To isolate malicious patterns like DNS tunneling or rapid queries to C2 (Command & Control) channels, use:
+    </p>
+    <div class="filter-box">dns.flags.response == 0  // Shows queries only<br>dns.flags.response == 1  // Shows answers only<br>dns.qry.type == 16       // Filters for TXT records (often used in data exfiltration)</div>
+    
+    <p><strong>How to Find and Understand the Fields:</strong></p>
+    <ol>
+        <li>Apply the filter <code>dns</code> and select a packet.</li>
+        <li>Expand the <strong>Domain Name System</strong> layer in the Packet Details Pane.</li>
+        <li>Inspect the <strong>Transaction ID</strong>: Queries and their matching responses share identical Transaction IDs. If you see responses without matching queries, suspect spoofing.</li>
+        <li>Expand the <strong>Queries</strong> sub-tree: Look at <code>dns.qry.name</code>. Attackers often bypass firewalls by encoding malicious payloads into subdomains (e.g., <code>afe394b92c.attacker.com</code>). Anomalously long domain strings indicate potential DNS Tunneling.</li>
+        <li>Expand the <strong>Answers</strong> sub-tree: Inspect the time-to-live (TTL) fields. Malicious domains tied to Fast-Flux networks change rapidly and will feature ultra-low TTL values (e.g., less than 60 seconds).</li>
+    </ol>
+
+    <!-- TCP SECTION -->
+    <h3>B. Transmission Control Protocol (TCP) & The Three-Way Handshake</h3>
+    <p>
+        <strong>What to Search:</strong> To analyze the underlying reliability of network conversations or detect port scanning, use:
+    </p>
+    <div class="filter-box">tcp.flags.syn == 1 and tcp.flags.ack == 0  // Isolates Handshake connection requests<br>tcp.flags.reset == 1                      // Filters aborted connections (RST flags)<br>tcp.analysis.retransmission               // Flags high network latency or packet drops</div>
+    
+    <p><strong>How to Find and Understand the Fields:</strong></p>
+    <ol>
+        <li><strong>The Three-Way Handshake:</strong> Look for three successive packets matching a conversation.
+            <ul>
+                <li><strong>Packet 1:</strong> [SYN] Sent by client. Look inside <code>Flags</code> for <code>Syn: Set</code>. Sequence Number is 0 (relative).</li>
+                <li><strong>Packet 2:</strong> [SYN, ACK] Sent by server. Look for both <code>Syn: Set</code> and <code>Acknowledgment: Set</code>.</li>
+                <li><strong>Packet 3:</strong> [ACK] Sent by client. Look for <code>Acknowledgment: Set</code>. The connection is now established.</li>
+            </ul>
+        </li>
+        <li><strong>Anatomy of a Port Scan:</strong> If you apply <code>tcp.flags.syn == 1</code> and observe a single external IP sending thousands of SYN packets to sequential destination ports within seconds, followed immediately by <code>RST</code> (Reset) packets from your server, you are witnessing an active network reconnaissance scan.</li>
+        <li><strong>Following Streams:</strong> Right-click any TCP packet, navigate to <strong>Follow</strong> &rarr; <strong>TCP Stream</strong>. This stitches fragmented packets into a chronological, human-readable transcript of the data exchange.</li>
+    </ol>
+
+    <!-- HTTP SECTION -->
+    <h3>C. Hypertext Transfer Protocol (HTTP)</h3>
+    <p>
+        <strong>What to Search:</strong> Because cleartext HTTP traffic is highly transparent, it is an ideal hunting ground for uncovering malware binaries, unencrypted credentials, and automated attacks.
+    </p>
+    <div class="filter-box">http.request.method == "POST"   // Isolates data transmissions (logins, uploads)<br>http.response.code == 404       // Finds file-not-found errors (web scanning indicators)<br>http.user_agent matches "sqlmap" // Catches automated scanning tool signatures</div>
+    
+    <p><strong>How to Find and Understand the Fields:</strong></p>
+    <ol>
+        <li>Filter by <code>http</code>. In the packet list view, look for the request method (GET/POST) and server responses (200 OK, 302 Redirect).</li>
+        <li>Expand the <strong>Hypertext Transfer Protocol</strong> layer.</li>
+        <li>Examine the <strong>Host</strong> and <strong>User-Agent</strong> fields. Legitimate browsers have complex User-Agent strings. Web shells or malicious download scripts often use generic or empty User-Agents (e.g., <code>Wget/version</code> or <code>curl/version</code>).</li>
+        <li>Inspect the <strong>Full request URI</strong>: Check for directory traversal attempts (e.g., <code>../../etc/passwd</code>) or embedded SQL injections within the URL string parameters.</li>
+    </ol>
+
+    <!-- HTTPS SECTION -->
+    <h3>D. Hypertext Transfer Protocol Secure (HTTPS / TLS)</h3>
+    <p>
+        <strong>What to Search:</strong> Modern production environments encrypt traffic via Transport Layer Security (TLS). While you cannot read the encrypted payload directly without certificate keys, you can analyze the handshake handshake attributes to fingerprint malicious servers.
+    </p>
+    <div class="filter-box">tls.handshake.type == 1    // Filters for Client Hello packets<br>tls.handshake.type == 2    // Filters for Server Hello packets<br>tls.handshake.extensions_server_name  // Extracts the actual SNI domain requested</div>
+    
+    <p><strong>How to Find and Understand the Fields:</strong></p>
+    <ol>
+        <li>Filter by <code>tls</code> or <code>ssl</code>.</li>
+        <li>Locate the <strong>Client Hello</strong> packet. Expand the TLS layer &rarr; Handshake Protocol &rarr; Extensions. Locate the <strong>server_name (SNI)</strong> field. This shows the actual domain the user is connecting to before encryption conceals the session. Compare this to DNS records to find anomalies.</li>
+        <li>Locate the <strong>Server Hello</strong> packet. Expand the certificates section. Inspect the <strong>Issuer</strong> and <strong>Validity Period</strong>. Self-signed certificates, certificates issued by unknown authorities, or validities lasting only a few days are highly characteristic of temporary Command & Control infrastructure.</li>
+    </ol>
+
+    <h2>4. Investigating Network Activity: SOC Analyst Playbook</h2>
+    <p>
+        When an alert fires in a Security Operations Center (SOC), a packet capture (PCAP) provides the ground truth. Follow this sequential operational methodology to isolate security events:
+    </p>
+
+    <div class="step-card">
+        <h4>Step 1: Check High-Level Statistics</h4>
+        <p>Before writing single filters, get a global view of the data. Navigate to <strong>Statistics</strong> &rarr; <strong>Conversations</strong>. Click on the TCP or IPv4 tabs to sort by bytes transferred. A single local host uploading gigabytes of data to an external, unfamiliar IP indicates data exfiltration.</p>
+    </div>
+
+    <div class="step-card">
+        <h4>Step 2: Profile Protocol Distribution</h4>
+        <p>Navigate to <strong>Statistics</strong> &rarr; <strong>Protocol Hierarchy</strong>. This window breaks down the percentage of traffic per protocol. If an unprivileged zone (like a Guest Wi-Fi network) shows 80% of its traffic allocated to protocol layers like SSH, RDP, or SMB, immediate lateral movement investigations should be launched.</p>
+    </div>
+
+    <div class="step-card">
+        <h4>Step 3: Extract Artifacts and Payloads</h4>
+        <p>If you discover a malicious file download over unencrypted HTTP, you can reconstruct the binary directly from the packet stream. Navigate to <strong>File</strong> &rarr; <strong>Export Objects</strong> &rarr; <strong>HTTP...</strong>. Review the filenames, select the threat item, and save it locally to a sandbox environment for static malware analysis and hashing.</p>
+    </div>
+
+    <div class="pro-tip">
+        <strong>Pro Tip for Threat Hunters:</strong> Always correlate your Wireshark analysis with host-based logs (Sysmon, EDR event tracking). Finding a suspicious HTTP POST connection to a rogue IP in Wireshark becomes significantly more critical when host logs reveal the connection was spawned directly from a malicious macro running inside Microsoft Word!
+    </div>
+</div>
+
+</body>
+</html>
+wireshark_basics_protocol_deepdive.html
+Displaying wireshark_basics_protocol_deepdive.html.
