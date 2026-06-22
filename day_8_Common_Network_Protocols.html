@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 08: Foundational Mastery - Network Protocols</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #e0e7ff; /* Soft Periwinkle Blue */
+            --text-main: #1e293b;
+            --text-light: #475569;
+            --accent-indigo: #4f46e5;
+            --accent-coral: #ff6b6b;
+            --accent-sky: #0ea5e9;
+            --secure-green: #10b981;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --code-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0fdf4 50%, #e0f2fe 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            background: linear-gradient(to right, var(--accent-indigo), var(--accent-sky));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        h2 {
+            color: var(--accent-indigo);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: var(--accent-sky);
+            margin-top: 1.5rem;
+        }
+
+        p, li {
+            line-height: 1.7;
+            color: var(--text-light);
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f1f5f9;
+            color: var(--accent-coral);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .terminal {
+            background: var(--code-bg);
+            color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent-indigo);
+        }
+
+        .terminal .comment { color: #64748b; }
+        .terminal .prompt { color: var(--accent-sky); font-weight: bold; }
+        .terminal .output { color: #cbd5e1; }
+        .terminal .flag { color: #fbbf24; }
+
+        .insight-box {
+            background: #e0f2fe;
+            border-left: 5px solid var(--accent-sky);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2rem 0;
+            color: #0369a1;
+            font-weight: 500;
+        }
+
+        /* Comparison Grid */
+        .comp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .comp-box {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .comp-box h4 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--accent-indigo);
+        }
+
+        /* Auditor Widget */
+        .auditor-widget {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .auditor-layout {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .protocol-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .proto-btn {
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: none;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            text-align: left;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .proto-btn:hover {
+            background: #e2e8f0;
+            transform: translateX(3px);
+        }
+
+        .proto-btn.active {
+            background: var(--accent-indigo);
+            color: white;
+        }
+
+        .auditor-results {
+            flex: 2;
+            background: #fdfdfd;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.danger { background: #ffe4e6; color: #b91c1c; }
+        .badge.success { background: #d1fae5; color: #065f46; }
+
+        @media (max-width: 768px) {
+            .comp-grid, .auditor-layout {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Day 08: Foundational Mastery</h1>
+            <div class="subtitle">Networking Fundamentals II: Core Network Protocols & Threat Vectors</div>
+        </header>
+
+        <div class="insight-box">
+            <strong>Incident Responder Perspective 🛡️</strong><br>
+            Attackers do not break rules; they abuse features. Firewalls, SIEM alert filters, and packet captures rely heavily on analyzing application layer protocols and protocol states. If you can distinguish standard behavior from anomalous protocol abuse, you can stop a security incident before it scales.
+        </div>
+
+        <section class="card">
+            <h2>1. The Transport Layer Battle: TCP vs. UDP</h2>
+            <p>Before examining application-layer traffic, we must verify how packets are moved. Layer 4 handles this using two completely contrasting delivery mechanisms.</p>
+            
+            <div class="comp-grid">
+                <div class="comp-box">
+                    <h4>Transmission Control Protocol (TCP)</h4>
+                    <p><strong>Mechanics:</strong> Connection-oriented. Establishes a guaranteed connection using a strict 3-Way Handshake (SYN ➡️ SYN-ACK ➡️ ACK). Features error checking, packet sequencing, and flow control.</p>
+                    <p><strong>🚨 Attacker Exploitation:</strong> 
+                        <li><em>SYN Flood Attacks:</em> Flooding a target with spoofed SYN requests, forcing the target to leave thousands of half-open connections waiting for an ACK response, completely exhausting memory pools.</li>
+                    </p>
+                </div>
+                <div class="comp-box">
+                    <h4>User Datagram Protocol (UDP)</h4>
+                    <p><strong>Mechanics:</strong> Connectionless. "Fire-and-forget" transmission with zero handshake or overhead. Fast but unverified delivery.</p>
+                    <p><strong>🚨 Attacker Exploitation:</strong> 
+                        <li><em>UDP Amplification DDoS:</em> Attackers spoof a victim's IP address when sending requests to open servers (like DNS or NTP). The servers stream massive, amplified response payloads directly to the victim's device, knocking it offline.</li>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>2. Interactive Protocol Security Auditor</h2>
+            <p>Select an industry protocol below to audit its baseline state, structural flaws, and security remediations.</p>
+
+            <div class="auditor-widget">
+                <div class="auditor-layout">
+                    <div class="protocol-selector">
+                        <button class="proto-btn active" onclick="audit('HTTP')">HTTP (80)</button>
+                        <button class="proto-btn" onclick="audit('HTTPS')">HTTPS (443)</button>
+                        <button class="proto-btn" onclick="audit('DNS')">DNS (53)</button>
+                        <button class="proto-btn" onclick="audit('DHCP')">DHCP (67/68)</button>
+                        <button class="proto-btn" onclick="audit('SSH')">SSH (22)</button>
+                        <button class="proto-btn" onclick="audit('FTP')">FTP (20/21)</button>
+                        <button class="proto-btn" onclick="audit('SMTP')">SMTP (25)</button>
+                    </div>
+                    <div class="auditor-results" id="auditDetails">
+                        </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>3. Hands-On Protocol Reconnaissance</h2>
+            <p>Security professionals validate theory by interrogating real-world endpoints using native command-line utilities.</p>
+
+            <h3>Deep-Dive Name Resolution with <code>dig</code></h3>
+            <p>While <code>nslookup</code> offers basic lookups, <code>dig</code> (Domain Information Groper) extracts detailed DNS zone data. Attackers often abuse DNS text (<code>TXT</code>) fields to store command-and-control payloads or manipulate mail security headers.</p>
+            <div class="terminal">
+                <span class="comment"># Query specific TXT records to audit SPF/DKIM authentication rules</span><br>
+                <span class="prompt">omnisec@soc:~$</span> dig google.com <span class="flag">TXT</span><br>
+                <span class="output">;; ANSWER SECTION:<br>
+google.com.      3599    IN    TXT    "v=spf1 include:_spf.google.com ~all"</span>
+            </div>
+
+            <h3>Auditing Web Responses & Headers via <code>curl</code></h3>
+            <p>Using <code>curl</code> with the <code>-I</code> flag tells the utility to fetch the HTTP headers *only*. This lets you identify server software configurations and see if essential security headers are absent.</p>
+            <div class="terminal">
+                <span class="comment"># Interrogate an application layer server to audit security settings</span><br>
+                <span class="prompt">omnisec@soc:~$</span> curl -I https://www.google.com<br>
+                <span class="output">HTTP/2 200<br>
+content-type: text/html; charset=UTF-8<br>
+x-frame-options: <span class="flag">SAMEORIGIN</span> <span class="comment">&lt;-- Blocks Clickjacking attempts</span><br>
+strict-transport-security: max-age=31536000 <span class="comment">&lt;-- Forces encrypted connections</span></span>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const protocols = {
+            HTTP: {
+                port: "80 (TCP)",
+                status: "danger",
+                statusText: "Insecure Plaintext",
+                threat: "Man-in-the-Middle (MitM) eavesdropping. Data transferred (including corporate credentials) is completely unencrypted and easily captured with packet sniffing tools like Wireshark.",
+                defense: "Deprecate entirely. Migrate all internal and external web assets to HTTPS."
+            },
+            HTTPS: {
+                port: "443 (TCP)",
+                status: "success",
+                statusText: "Secure Encrypted",
+                threat: "SSL/TLS stripping or exploitation of weak cipher suites. Attackers can also use valid HTTPS certs on malicious domains to trick targets.",
+                defense: "Enforce strict transport security policies (HSTS) and ensure only secure TLS versions (TLS 1.2/1.3) are enabled."
+            },
+            DNS: {
+                port: "53 (UDP / TCP for Zone Transfers)",
+                status: "danger",
+                statusText: "Unauthenticated by Default",
+                threat: "DNS Cache Poisoning / Spoofing. Attackers feed corrupted mapping entries to a DNS resolver, tricking clients into routing to malicious infrastructure.",
+                defense: "Deploy DNSSEC (DNS Security Extensions) to add cryptographic validation to records, or adopt DNS-over-HTTPS (DoH)."
+            },
+            DHCP: {
+                port: "67 (Server) / 68 (Client) [UDP]",
+                status: "danger",
+                statusText: "Lack of Access Control",
+                threat: "Rogue DHCP Server Insertion. An attacker sets up a fake DHCP engine on a local network, forcing endpoints to use the attacker's box as the default gateway to sniff outbound traffic.",
+                defense: "Enable DHCP Snooping on layer 2 managed switches to drop unapproved DHCP responses."
+            },
+            SSH: {
+                port: "22 (TCP)",
+                status: "success",
+                statusText: "Secure Cryptographic",
+                threat: "Brute-force credential cracking or exposure of old, unpatched SSH daemon implementations containing remote exploit code.",
+                defense: "Disable root logins, switch default port away from 22, and mandate public-key authentication over traditional passwords."
+            },
+            FTP: {
+                port: "20 (Data Transfer), 21 (Control) [TCP]",
+                status: "danger",
+                statusText: "Legacy Plaintext",
+                threat: "Cleartext transmission of administrative user logins and session payloads across the network stream.",
+                defense: "Immediately upgrade infrastructure to use SFTP (SSH File Transfer Protocol) running over port 22."
+            },
+            SMTP: {
+                port: "25 (TCP)",
+                status: "danger",
+                statusText: "Spoofing Risk",
+                threat: "Email Spoofing. Mail engines don't natively validate sending sources, allowing malicious actors to easily spoof trusted sender identities during phishing campaigns.",
+                defense: "Configure rigid external validation frameworks using SPF (Sender Policy Framework), DKIM keys, and DMARC record controls."
+            }
+        };
+
+        function audit(protoName) {
+            // Update active states
+            document.querySelectorAll('.proto-btn').forEach(btn => {
+                if(btn.innerText.includes(protoName)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            const data = protocols[protoName];
+            const container = document.getElementById('auditDetails');
+
+            container.innerHTML = `
+                <h3 style="margin-top:0; color:var(--accent-indigo); font-family:'Fira Code', monospace;">${protoName} Audit Profile</h3>
+                <p><strong>Default Port:</strong> <code>${data.port}</code></p>
+                <p><strong>Security Status:</strong> <span class="badge ${data.status}">${data.statusText}</span></p>
+                <p style="border-left: 3px solid var(--accent-coral); padding-left: 10px;"><strong>Primary Attack Vector:</strong> ${data.threat}</p>
+                <p style="border-left: 3px solid var(--secure-green); padding-left: 10px;"><strong>Defensive Hardening:</strong> ${data.defense}</p>
+            `;
+        }
+
+        // Initialize display
+        window.onload = () => audit('HTTP');
+    </script>
+</body>
+</html>
