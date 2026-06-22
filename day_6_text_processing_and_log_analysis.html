@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 06: Foundational Mastery - Linux Basics III</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0fdf4; /* Soft Mint Green */
+            --text-main: #334155;
+            --text-light: #64748b;
+            --accent-green: #34d399;
+            --accent-teal: #2dd4bf;
+            --accent-blue: #38bdf8;
+            --alert-red: #fb7185;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --code-bg: #1e293b;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent-teal), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        h2 {
+            color: var(--accent-teal);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: var(--accent-blue);
+            margin-top: 1.5rem;
+        }
+
+        p {
+            line-height: 1.7;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #e2e8f0;
+            color: #0f172a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .terminal {
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .terminal .comment { color: #94a3b8; }
+        .terminal .prompt { color: var(--accent-green); font-weight: bold; }
+        .terminal .highlight { color: var(--alert-red); font-weight: bold; }
+
+        .insight-box {
+            background: #fff1f2;
+            border-left: 5px solid var(--alert-red);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2rem 0;
+            color: #881337;
+            font-weight: 500;
+        }
+
+        /* Interactive Pipeline Simulator */
+        .simulator {
+            background: #ffffff;
+            border: 2px dashed var(--accent-teal);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sim-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--accent-teal);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .sim-output {
+            background: var(--code-bg);
+            color: #a7f3d0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            min-height: 120px;
+            white-space: pre-wrap;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-teal);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Day 06: Foundational Mastery</h1>
+            <div class="subtitle">Linux Basics III: Text Processing & Log Analysis Workflow</div>
+        </header>
+
+        <div class="insight-box">
+            <strong>Industry Insight 💡</strong><br>
+            A raw log file contains millions of events. As a Blue Teamer, your job isn't to read logs; it's to <em>interrogate</em> them. We use pipelines to chain tiny, single-purpose tools together to transform massive files into actionable threat intelligence.
+        </div>
+
+        <section class="card">
+            <h2>1. The Anatomy of the Pipeline (|)</h2>
+            <p>In Linux, the pipe operator <code>|</code> takes the <strong>Standard Output (stdout)</strong> of the command on the left and feeds it directly into the <strong>Standard Input (stdin)</strong> of the command on the right. This allows you to build a continuous assembly line for data.</p>
+            <div class="flow-diagram">
+                [Raw Log] ➡️ grep ➡️ [Filtered Rows] ➡️ awk ➡️ [Specific Columns] ➡️ sort/uniq ➡️ [Actionable Intelligence]
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>2. Isolating the Threat with <code>grep</code></h2>
+            <p><code>grep</code> (Global Regular Expression Print) searches line-by-line for a specific pattern. When analyzing an authentication log (<code>/var/log/auth.log</code>), you don't care about successful logins; you want to isolate failures.</p>
+            
+            <div class="terminal">
+                <span class="comment"># Search for lines containing the exact string "Failed password"</span><br>
+                <span class="prompt">omnisec@soc:~$</span> grep "Failed password" /var/log/auth.log<br><br>
+                <span class="comment"># Output Example:</span><br>
+                Oct 14 09:12:34 server sshd[1234]: <span class="highlight">Failed password</span> for root from 192.168.1.50 port 44322 ssh2
+            </div>
+            
+            <p><strong>Crucial Flags:</strong> <code>-i</code> (ignore case), <code>-v</code> (invert match - show lines that <em>don't</em> contain the word), <code>-r</code> (search recursively through folders).</p>
+        </section>
+
+        <section class="card">
+            <h2>3. Surgical Extraction with <code>awk</code></h2>
+            <p>While <code>grep</code> pulls out the whole row, <code>awk</code> pulls out specific columns. Logs are space-separated by default. Looking at our output above, the IP address (192.168.1.50) is the <strong>11th word</strong> in the sentence.</p>
+
+            <div class="terminal">
+                <span class="comment"># Pipe the grep output into awk, telling awk to print only the 11th field ($11)</span><br>
+                <span class="prompt">omnisec@soc:~$</span> grep "Failed password" /var/log/auth.log | awk '{print $11}'<br><br>
+                <span class="comment"># Output:</span><br>
+                192.168.1.50<br>
+                192.168.1.50<br>
+                10.0.0.5
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>4. Threat Pattern Recognition (<code>sort</code> & <code>uniq</code>)</h2>
+            <p>Now we have a list of IPs, but an attacker brute-forcing a server will leave thousands of identical IPs. We need to count them to identify the worst offenders.</p>
+            <p><em>Rule of Linux:</em> <code>uniq</code> can only remove duplicates if they are directly next to each other. Therefore, you <strong>must</strong> <code>sort</code> the data before passing it to <code>uniq</code>.</p>
+
+            <div class="terminal">
+                <span class="comment"># 1. sort: alphabetically group IPs together</span><br>
+                <span class="comment"># 2. uniq -c: count adjacent duplicates</span><br>
+                <span class="comment"># 3. sort -nr: sort numerically (-n) in reverse/descending order (-r) to put the biggest attacker on top</span><br>
+                <span class="prompt">omnisec@soc:~$</span> grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -nr<br><br>
+                <span class="comment"># Output (The Holy Grail of Log Analysis):</span><br>
+                <span class="highlight">1542</span> 192.168.1.50  <span class="comment">&lt;-- Massive Brute Force Attack</span><br>
+                <span class="highlight">3</span>    10.0.0.5      <span class="comment">&lt;-- Probably a user who forgot their password</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>5. Automating the Hunt (Bash Scripting)</h2>
+            <p>SOC Analysts don't type these long pipelines manually every day. We wrap them in reusable shell scripts.</p>
+            <div class="terminal">
+                <span class="comment">#!/bin/bash</span><br>
+                <span class="comment"># File: find_attackers.sh</span><br>
+                <span class="comment"># Purpose: Extracts top 5 attacking IPs from a provided log file</span><br><br>
+                LOG_FILE=$1<br><br>
+                echo "[*] Analyzing $LOG_FILE for SSH brute-force attempts..."<br>
+                echo "--------------------------------------------------------"<br>
+                grep "Failed password" "$LOG_FILE" | awk '{print $11}' | sort | uniq -c | sort -nr | head -n 5<br>
+                echo "--------------------------------------------------------"<br>
+                echo "[*] Analysis Complete. Consider blocking the top IPs."
+            </div>
+            <p><em>Usage:</em> <code>chmod +x find_attackers.sh</code> followed by <code>./find_attackers.sh /var/log/auth.log</code></p>
+        </section>
+
+        <section class="card simulator">
+            <h2>🛠️ Interactive Log Pipeline Builder</h2>
+            <p>Click the blocks below to build the pipeline we just learned. Watch how the raw log data transforms at each step!</p>
+            
+            <div class="sim-controls">
+                <button onclick="applyCommand('raw')">cat auth.log</button>
+                <button onclick="applyCommand('grep')">| grep "Failed"</button>
+                <button onclick="applyCommand('awk')">| awk '{print $11}'</button>
+                <button onclick="applyCommand('sort')">| sort</button>
+                <button onclick="applyCommand('uniq')">| uniq -c</button>
+            </div>
+
+            <div class="sim-output" id="simOut">Click 'cat auth.log' to view the raw log file.</div>
+        </section>
+
+    </div>
+
+    <script>
+        const rawLog = `Oct 14 09:12:30 soc-server sshd[101]: Accepted publickey for user from 10.0.0.2
+Oct 14 09:12:34 soc-server sshd[102]: Failed password for root from 192.168.1.50 port 44322 ssh2
+Oct 14 09:12:35 soc-server sshd[102]: Failed password for root from 192.168.1.50 port 44322 ssh2
+Oct 14 09:15:10 soc-server sshd[103]: Failed password for admin from 10.0.0.5 port 55112 ssh2
+Oct 14 09:15:12 soc-server sshd[104]: Failed password for root from 192.168.1.50 port 44322 ssh2`;
+
+        const state = { currentStep: 0 };
+
+        function applyCommand(cmd) {
+            const outBox = document.getElementById('simOut');
+            
+            if (cmd === 'raw') {
+                outBox.innerText = rawLog;
+                state.currentStep = 1;
+            } else if (cmd === 'grep' && state.currentStep >= 1) {
+                outBox.innerText = `Oct 14 09:12:34 soc-server sshd[102]: Failed password for root from 192.168.1.50 port 44322 ssh2
+Oct 14 09:12:35 soc-server sshd[102]: Failed password for root from 192.168.1.50 port 44322 ssh2
+Oct 14 09:15:10 soc-server sshd[103]: Failed password for admin from 10.0.0.5 port 55112 ssh2
+Oct 14 09:15:12 soc-server sshd[104]: Failed password for root from 192.168.1.50 port 44322 ssh2`;
+                state.currentStep = 2;
+            } else if (cmd === 'awk' && state.currentStep >= 2) {
+                outBox.innerText = `192.168.1.50\n192.168.1.50\n10.0.0.5\n192.168.1.50`;
+                state.currentStep = 3;
+            } else if (cmd === 'sort' && state.currentStep >= 3) {
+                outBox.innerText = `10.0.0.5\n192.168.1.50\n192.168.1.50\n192.168.1.50`;
+                state.currentStep = 4;
+            } else if (cmd === 'uniq' && state.currentStep >= 4) {
+                outBox.innerText = `      1 10.0.0.5\n      3 192.168.1.50`;
+                state.currentStep = 5;
+            } else {
+                alert("Please apply the commands in the correct pipeline order! (cat -> grep -> awk -> sort -> uniq)");
+            }
+        }
+    </script>
+</body>
+</html>
