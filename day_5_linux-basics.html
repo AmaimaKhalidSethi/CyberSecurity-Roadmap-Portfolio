@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 5: Foundational Mastery - Linux Basics II</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdf2f8; /* Soft Blush Pink */
+            --text-main: #4a4a4a;
+            --text-light: #7a7a7a;
+            --accent-pink: #f472b6;
+            --accent-purple: #c084fc;
+            --accent-blue: #7dd3fc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --code-bg: #2d3748;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent-pink), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            color: var(--accent-purple);
+            border-bottom: 2px dashed var(--accent-pink);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        h3 {
+            color: var(--accent-blue);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .terminal {
+            background: var(--code-bg);
+            color: #a7f3d0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .terminal-comment { color: #94a3b8; }
+        .terminal-prompt { color: var(--accent-pink); }
+
+        .insight-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2rem 0;
+            color: #0c4a6e;
+        }
+
+        /* Interactive Chmod Calculator Styles */
+        .calculator {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-top: 1.5rem;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .role-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent-purple);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .checkbox-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        input[type="checkbox"] {
+            accent-color: var(--accent-pink);
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+        }
+
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            color: var(--accent-pink);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Day 05: Foundational Mastery</h1>
+            <div class="subtitle">Linux Basics II: Permissions, Users & Processes</div>
+        </header>
+
+        <div class="insight-box">
+            <strong>Industry Insight 💡</strong><br>
+            Proper permissions and user management are the foundation of Linux security. In enterprise environments and penetration testing, misconfigured permissions (like writable <code>/etc/passwd</code> files or unprotected SUID binaries) are among the most common vectors for privilege escalation.
+        </div>
+
+        <section class="card">
+            <h2>1. Linux File Permissions</h2>
+            <p>Linux uses a <strong>UGO</strong> (User, Group, Others) model. Every file and directory is assigned three types of access rights: Read (<strong>r</strong>), Write (<strong>w</strong>), and Execute (<strong>x</strong>).</p>
+            <ul>
+                <li><strong>Read (r = 4):</strong> View file contents or list directory contents.</li>
+                <li><strong>Write (w = 2):</strong> Modify file contents or create/delete files in a directory.</li>
+                <li><strong>Execute (x = 1):</strong> Run a script/binary or enter a directory (cd).</li>
+            </ul>
+
+            <div class="calculator">
+                <h3 style="text-align: center; margin-top: 0;">✨ Interactive chmod Calculator ✨</h3>
+                <p style="text-align: center; font-size: 0.9rem; color: var(--text-light);">Select permissions below to generate the command!</p>
+                
+                <div class="calc-grid">
+                    <div>
+                        <div class="role-title">User (Owner)</div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" id="ur" value="4" onchange="calcChmod()" checked> Read (4)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="uw" value="2" onchange="calcChmod()" checked> Write (2)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="ux" value="1" onchange="calcChmod()"> Execute (1)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="role-title">Group</div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" id="gr" value="4" onchange="calcChmod()" checked> Read (4)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="gw" value="2" onchange="calcChmod()"> Write (2)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="gx" value="1" onchange="calcChmod()"> Execute (1)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="role-title">Others</div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" id="or" value="4" onchange="calcChmod()" checked> Read (4)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="ow" value="2" onchange="calcChmod()"> Write (2)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="ox" value="1" onchange="calcChmod()"> Execute (1)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-box">
+                    Command: chmod <span id="octalOutput">644</span> filename<br>
+                    <span style="font-size: 1rem; color: var(--text-light);">Symbolic: <span id="symbolicOutput">-rw-r--r--</span></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>2. User & Group Management</h2>
+            <p>Managing who has access to the system is crucial. The root user has absolute power, while standard users operate in restricted environments.</p>
+            
+            <div class="terminal">
+                <span class="terminal-comment"># Create a new user named 'intern'</span><br>
+                <span class="terminal-prompt">root@omnisec:~#</span> useradd -m intern<br><br>
+                
+                <span class="terminal-comment"># Set a password for the new user</span><br>
+                <span class="terminal-prompt">root@omnisec:~#</span> passwd intern<br><br>
+
+                <span class="terminal-comment"># Add user to the 'sudo' group for admin privileges</span><br>
+                <span class="terminal-prompt">root@omnisec:~#</span> usermod -aG sudo intern<br><br>
+
+                <span class="terminal-comment"># Switch to the new user account</span><br>
+                <span class="terminal-prompt">root@omnisec:~#</span> su - intern
+            </div>
+
+            <p><strong>Important Files:</strong></p>
+            <ul>
+                <li><code>/etc/passwd</code>: Contains user account info (readable by all).</li>
+                <li><code>/etc/shadow</code>: Contains secure user password hashes (readable only by root).</li>
+                <li><code>/etc/group</code>: Contains group definitions.</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h2>3. Process Monitoring & Management</h2>
+            <p>Every program running on Linux is a process assigned a unique <strong>PID</strong> (Process ID). Monitoring these helps detect malware, resource hogs, or unauthorized scripts.</p>
+
+            <div class="terminal">
+                <span class="terminal-comment"># View currently running processes (snapshot)</span><br>
+                <span class="terminal-prompt">user@omnisec:~$</span> ps aux<br><br>
+
+                <span class="terminal-comment"># View interactive, real-time process monitor</span><br>
+                <span class="terminal-prompt">user@omnisec:~$</span> top<br><br>
+
+                <span class="terminal-comment"># Gracefully ask a process to terminate (PID 1337)</span><br>
+                <span class="terminal-prompt">user@omnisec:~$</span> kill 1337<br><br>
+
+                <span class="terminal-comment"># Forcefully terminate an unresponsive or malicious process</span><br>
+                <span class="terminal-prompt">user@omnisec:~$</span> kill -9 1337
+            </div>
+            
+            <p><strong>Pro Tip:</strong> <code>htop</code> is a much more colorful, user-friendly alternative to <code>top</code>. If it's not installed, you can usually grab it via <code>sudo apt install htop</code>.</p>
+        </section>
+
+    </div>
+
+    <script>
+        function calcChmod() {
+            // Calculate User (Owner)
+            let u = 0;
+            if(document.getElementById('ur').checked) u += 4;
+            if(document.getElementById('uw').checked) u += 2;
+            if(document.getElementById('ux').checked) u += 1;
+
+            // Calculate Group
+            let g = 0;
+            if(document.getElementById('gr').checked) g += 4;
+            if(document.getElementById('gw').checked) g += 2;
+            if(document.getElementById('gx').checked) g += 1;
+
+            // Calculate Others
+            let o = 0;
+            if(document.getElementById('or').checked) o += 4;
+            if(document.getElementById('ow').checked) o += 2;
+            if(document.getElementById('ox').checked) o += 1;
+
+            // Update Octal Output
+            document.getElementById('octalOutput').innerText = `${u}${g}${o}`;
+
+            // Generate Symbolic Output
+            const symMap = { 4: 'r', 2: 'w', 1: 'x', 0: '-' };
+            function getSym(val) {
+                let res = '';
+                res += (val & 4) ? 'r' : '-';
+                res += (val & 2) ? 'w' : '-';
+                res += (val & 1) ? 'x' : '-';
+                return res;
+            }
+
+            const symbolicStr = `-${getSym(u)}${getSym(g)}${getSym(o)}`;
+            document.getElementById('symbolicOutput').innerText = symbolicStr;
+        }
+
+        // Initialize calculation on page load
+        window.onload = calcChmod;
+    </script>
+</body>
+</html>
