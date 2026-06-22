@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 07: Foundational Mastery - Networking I</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #faf5ff; /* Soft Lavender */
+            --text-main: #4b5563;
+            --text-light: #6b7280;
+            --accent-purple: #a855f7;
+            --accent-peach: #fb923c;
+            --accent-blue: #3b82f6;
+            --accent-pink: #ec4899;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --code-bg: #1f2937;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #faf5ff 0%, #fff7ed 50%, #eff6ff 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent-purple), var(--accent-peach));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        h2 {
+            color: var(--accent-purple);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px dashed #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: var(--accent-blue);
+            margin-top: 1.5rem;
+        }
+
+        p, li {
+            line-height: 1.7;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f3f4f6;
+            color: var(--accent-pink);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .terminal {
+            background: var(--code-bg);
+            color: #e5e7eb;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent-peach);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .terminal .comment { color: #9ca3af; }
+        .terminal .prompt { color: var(--accent-peach); font-weight: bold; }
+        .terminal .output { color: #93c5fd; }
+
+        .insight-box {
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-left: 5px solid var(--accent-purple);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2rem 0;
+            color: #5b21b6;
+            font-weight: 500;
+        }
+
+        /* Interactive OSI Explorer */
+        .osi-container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .osi-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .osi-layer {
+            padding: 1rem;
+            background: #f8fafc;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+
+        .osi-layer:hover {
+            transform: translateX(5px);
+            border-color: var(--accent-purple);
+            background: #faf5ff;
+        }
+
+        .osi-layer.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+        }
+
+        .osi-details {
+            flex: 2;
+            background: #fdfaf6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-peach);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .layer-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+            margin-bottom: 0.5rem;
+        }
+
+        .pdu-badge {
+            display: inline-block;
+            background: var(--accent-peach);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .layer-desc {
+            margin-bottom: 1rem;
+        }
+
+        .layer-soc {
+            font-size: 0.95rem;
+            color: #0369a1;
+            background: #e0f2fe;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .osi-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Day 07: Foundational Mastery</h1>
+            <div class="subtitle">Networking Fundamentals I: OSI Model & Network Exploration</div>
+        </header>
+
+        <div class="insight-box">
+            <strong>Industry Insight 💡</strong><br>
+            Before you can analyze an attack, investigate a honeypot alert, or intercept credentials, you must understand exactly how that data moves. Malicious actors hide in the blind spots of network configurations. The OSI model isn't just theory—it is your diagnostic map for isolating where a breach occurred.
+        </div>
+
+        <section class="card">
+            <h2>1. The OSI & TCP/IP Models</h2>
+            <p>The <strong>Open Systems Interconnection (OSI)</strong> model breaks network communication down into 7 logical layers. While the real world primarily runs on the simpler 4-layer <strong>TCP/IP model</strong>, cybersecurity professionals use the OSI model as a universal language to describe where attacks happen (e.g., "This is a Layer 7 DDoS attack" vs. "This is a Layer 3 packet spoofing attack").</p>
+            
+            <h3>Interactive OSI Protocol Explorer</h3>
+            <p style="font-size: 0.9rem; color: var(--text-light);">Click on each layer to understand its function, data unit, and how it relates to security operations.</p>
+            
+            <div class="osi-container">
+                <div class="osi-stack" id="osiStack">
+                    <div class="osi-layer" onclick="showLayer(7)">7. Application</div>
+                    <div class="osi-layer" onclick="showLayer(6)">6. Presentation</div>
+                    <div class="osi-layer" onclick="showLayer(5)">5. Session</div>
+                    <div class="osi-layer" onclick="showLayer(4)">4. Transport</div>
+                    <div class="osi-layer" onclick="showLayer(3)">3. Network</div>
+                    <div class="osi-layer" onclick="showLayer(2)">2. Data Link</div>
+                    <div class="osi-layer" onclick="showLayer(1)">1. Physical</div>
+                </div>
+                <div class="osi-details" id="osiDetails">
+                    <div class="layer-title">Select a Layer</div>
+                    <div class="layer-desc">Click any layer on the left to reveal its protocols, data units, and relevance to SOC Analysts.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>2. Network Exploration & Troubleshooting</h2>
+            <p>A Blue Teamer must be able to quickly assess the health and topology of a network. These native Linux tools are your first line of reconnaissance and troubleshooting.</p>
+
+            <h3>Testing Connectivity with <code>ping</code></h3>
+            <p>Uses ICMP (Internet Control Message Protocol) Echo Requests to determine if a host is alive and measure the round-trip time. It operates at <strong>Layer 3</strong>.</p>
+            <div class="terminal">
+                <span class="comment"># Send exactly 3 pings to a Google DNS server</span><br>
+                <span class="prompt">omnisec@soc:~$</span> ping -c 3 8.8.8.8<br>
+                <span class="output">PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.<br>
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=14.2 ms<br>
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=15.1 ms<br>
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=117 time=14.8 ms</span>
+            </div>
+
+            <h3>Tracing the Route with <code>traceroute</code></h3>
+            <p>Shows the exact path a packet takes across the internet to reach its destination by incrementally increasing the TTL (Time to Live) of packets.</p>
+            <div class="terminal">
+                <span class="comment"># Trace the path to example.com</span><br>
+                <span class="prompt">omnisec@soc:~$</span> traceroute example.com<br>
+                <span class="output">1  router.local (192.168.1.1)  1.123 ms<br>
+2  isp-gateway.net (10.14.2.1)  12.450 ms<br>
+3  core-router-ny.net (203.0.113.5)  25.671 ms</span>
+            </div>
+
+            <h3>Discovering Listening Services with <code>ss</code></h3>
+            <p>The modern, faster replacement for <code>netstat</code>. It dumps socket statistics, allowing you to see exactly which ports are open and listening on your machine. This is critical for finding unauthorized backdoor services.</p>
+            <div class="terminal">
+                <span class="comment"># -t (TCP), -u (UDP), -l (Listening), -p (Show Process), -n (Numeric IPs/Ports)</span><br>
+                <span class="prompt">root@soc:~#</span> ss -tulpn<br>
+                <span class="output">Netid  State   Recv-Q  Send-Q    Local Address:Port    Peer Address:Port<br>
+tcp    LISTEN  0       128             0.0.0.0:22           0.0.0.0:* users:(("sshd",pid=742,fd=3))<br>
+tcp    LISTEN  0       511             0.0.0.0:80           0.0.0.0:* users:(("nginx",pid=815,fd=6))</span>
+            </div>
+            <p><em>Security Context:</em> If you are monitoring a honeypot, running <code>ss -tulpn</code> verifies that your decoy services are properly bound and listening for attacker traffic.</p>
+        </section>
+
+    </div>
+
+    <script>
+        const layerData = {
+            7: {
+                title: "Layer 7: Application",
+                pdu: "Data",
+                desc: "The interface between the network and the software applications. This is where users interact directly with network services.",
+                protocols: "HTTP/HTTPS, FTP, SMTP, DNS, SSH",
+                soc: "🔍 SOC Focus: This is where credential interception, SQL injection, and Cross-Site Scripting (XSS) occur. Logs from Nginx or Apache are analyzed here."
+            },
+            6: {
+                title: "Layer 6: Presentation",
+                pdu: "Data",
+                desc: "Ensures data is in a usable format and handles data encryption, decryption, and compression.",
+                protocols: "SSL/TLS, JPEG, ASCII, JSON",
+                soc: "🔍 SOC Focus: Malware often uses encryption at this layer to hide its payload. SSL stripping attacks manipulate this layer."
+            },
+            5: {
+                title: "Layer 5: Session",
+                pdu: "Data",
+                desc: "Establishes, maintains, and terminates connections (sessions) between local and remote applications.",
+                protocols: "NetBIOS, RPC, SMB",
+                soc: "🔍 SOC Focus: NTLM relaying and session hijacking attacks manipulate the mechanisms established at this layer."
+            },
+            4: {
+                title: "Layer 4: Transport",
+                pdu: "Segment (TCP) / Datagram (UDP)",
+                desc: "Ensures reliable or fast delivery of data. TCP provides guaranteed delivery via the 3-way handshake, while UDP provides fast, connectionless delivery.",
+                protocols: "TCP, UDP",
+                soc: "🔍 SOC Focus: Port scanning (like Nmap stealth scans) and SYN flood DDoS attacks target the TCP handshake process here."
+            },
+            3: {
+                title: "Layer 3: Network",
+                pdu: "Packet",
+                desc: "Responsible for routing data across different networks using logical addresses (IP addresses).",
+                protocols: "IPv4, IPv6, ICMP, IPSec, OSPF",
+                soc: "🔍 SOC Focus: IP spoofing, Ping of Death, and routing table manipulation. Firewalls primarily filter traffic based on rules set at this layer."
+            },
+            2: {
+                title: "Layer 2: Data Link",
+                pdu: "Frame",
+                desc: "Handles node-to-node data transfer within the same local network using physical addresses (MAC addresses).",
+                protocols: "Ethernet, ARP, VLANs (802.1Q)",
+                soc: "🔍 SOC Focus: ARP Spoofing (Man-in-the-Middle) and MAC flooding attacks happen here. Switches operate at this layer."
+            },
+            1: {
+                title: "Layer 1: Physical",
+                pdu: "Bits",
+                desc: "The physical transmission of raw bit streams over a physical medium (cables, radio waves).",
+                protocols: "Ethernet cables (Cat6), Fiber Optics, Wi-Fi Radio Frequencies",
+                soc: "🔍 SOC Focus: Physical wiretapping, rogue Wi-Fi access points, and cutting fiber cables. You can't hack what isn't plugged in!"
+            }
+        };
+
+        function showLayer(layerNum) {
+            // Update active state on buttons
+            document.querySelectorAll('.osi-layer').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update content
+            const data = layerData[layerNum];
+            const detailsDiv = document.getElementById('osiDetails');
+            
+            detailsDiv.innerHTML = `
+                <div class="layer-title">${data.title}</div>
+                <div><span class="pdu-badge">PDU: ${data.pdu}</span></div>
+                <div class="layer-desc"><strong>Function:</strong> ${data.desc}</div>
+                <div class="layer-desc"><strong>Common Protocols:</strong> ${data.protocols}</div>
+                <div class="layer-soc">${data.soc}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
