@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 11: NMAP - 120-Day Cybersecurity Learning Roadmap</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #4ade80;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --code-bg: #020617;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-top: 0;
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 35px;
+        }
+
+        h3 {
+            color: #94a3b8;
+            margin-top: 20px;
+        }
+
+        p, li {
+            color: #cbd5e1;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9em;
+            color: #f1f5f9;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #1e293b;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .alert-danger {
+            border-left: 4px solid var(--danger-color);
+            background-color: #2d161a;
+        }
+
+        .alert-success {
+            border-left: 4px solid var(--success-color);
+            background-color: #142a1e;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge-stealth-high { background-color: #14532d; color: #4ade80; }
+        .badge-stealth-medium { background-color: #78350f; color: #fbbf24; }
+        .badge-stealth-low { background-color: #7f1d1d; color: #f87171; }
+        .badge-stealth-na { background-color: #475569; color: #cbd5e1; }
+
+        .template-block {
+            background-color: #0b0f19;
+            border: 1px dashed var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <p style="color: var(--accent-color); font-weight: bold; text-transform: uppercase; margin: 0; letter-spacing: 1px;">120-Day Cybersecurity Learning Roadmap</p>
+        <h1>Day 11: NMAP</h1>
+    </header>
+
+    <section class="card">
+        <h2>Objective</h2>
+        <p>Today you will learn how to use <strong>Nmap (Network Mapper)</strong>, the most popular network discovery and security auditing tool used by cybersecurity professionals worldwide.</p>
+        
+        <h3>Nmap is essential for:</h3>
+        <ul>
+            <li>Network Discovery</li>
+            <li>Port Scanning</li>
+            <li>Service Enumeration</li>
+            <li>Operating System Detection</li>
+            <li>Vulnerability Assessment</li>
+            <li>Security Auditing</li>
+        </ul>
+
+        <h3>This lesson prepares you for:</h3>
+        <ul>
+            <li>Vulnerability Assessment</li>
+            <li>Enumeration Techniques</li>
+            <li>Penetration Testing</li>
+            <li>Security Auditing</li>
+            <li>Red Team Activities</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Why Nmap Matters</h2>
+        <p>Before securing a system, you must understand what is exposed. Nmap helps security professionals:</p>
+        <ul>
+            <li>Discover live hosts</li>
+            <li>Identify open ports</li>
+            <li>Determine running services</li>
+            <li>Detect service versions</li>
+            <li>Identify operating systems</li>
+            <li>Find potential vulnerabilities</li>
+        </ul>
+        <p>In real-world engagements, Nmap is often the first tool used during <strong>reconnaissance</strong>.</p>
+    </section>
+
+    <section>
+        <h2>What Is Port Scanning?</h2>
+        <p>Port scanning is the process of checking which ports on a target system are open, closed, or filtered. Understanding open ports helps security professionals identify:</p>
+        <ul>
+            <li>Running services</li>
+            <li>Potential attack surfaces</li>
+            <li>Misconfigurations</li>
+            <li>Security risks</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Common Nmap Scan Types</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Flag</th>
+                    <th>Scan Type</th>
+                    <th>Description</th>
+                    <th>Use Case</th>
+                    <th>Stealth Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>-sS</code></td>
+                    <td><strong>TCP SYN Scan</strong></td>
+                    <td>Half-open scan</td>
+                    <td>General reconnaissance</td>
+                    <td><span class="badge badge-stealth-high">High</span></td>
+                </tr>
+                <tr>
+                    <td><code>-sT</code></td>
+                    <td><strong>TCP Connect Scan</strong></td>
+                    <td>Full TCP handshake</td>
+                    <td>No root privileges</td>
+                    <td><span class="badge badge-stealth-low">Low</span></td>
+                </tr>
+                <tr>
+                    <td><code>-sV</code></td>
+                    <td><strong>Version Detection</strong></td>
+                    <td>Detect service versions</td>
+                    <td>Service enumeration</td>
+                    <td><span class="badge badge-stealth-medium">Medium</span></td>
+                </tr>
+                <tr>
+                    <td><code>-O</code></td>
+                    <td><strong>OS Detection</strong></td>
+                    <td>Detect operating system</td>
+                    <td>Host profiling</td>
+                    <td><span class="badge badge-stealth-medium">Medium</span></td>
+                </tr>
+                <tr>
+                    <td><code>-A</code></td>
+                    <td><strong>Aggressive Scan</strong></td>
+                    <td>OS, Version, Scripts, Traceroute</td>
+                    <td>Detailed reconnaissance</td>
+                    <td><span class="badge badge-stealth-low">Low</span></td>
+                </tr>
+                <tr>
+                    <td><code>-p</code></td>
+                    <td><strong>Port Selection</strong></td>
+                    <td>Scan specific ports</td>
+                    <td>Targeted scanning</td>
+                    <td><span class="badge badge-stealth-na">N/A</span></td>
+                </tr>
+                <tr>
+                    <td><code>--script</code></td>
+                    <td><strong>NSE Scripts</strong></td>
+                    <td>Run scripts</td>
+                    <td>Advanced enumeration</td>
+                    <td><span class="badge badge-stealth-na">Varies</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Important Nmap Options</h2>
+        
+        <h3>Skip Host Discovery</h3>
+        <pre><code>nmap -Pn &lt;target&gt;</code></pre>
+        <p><strong>Purpose:</strong> Assume the target is online; useful when ICMP is blocked.</p>
+
+        <h3>Faster Scanning</h3>
+        <pre><code>nmap -T4 &lt;target&gt;</code></pre>
+        <p><strong>Purpose:</strong> Increase scanning speed; useful in lab environments.</p>
+
+        <h3>Save Results</h3>
+        <pre><code>nmap -oN scan_results.txt &lt;target&gt;</code></pre>
+        <p><strong>Purpose:</strong> Save output to a file; useful for documentation and reporting.</p>
+    </section>
+
+    <section class="card">
+        <h2>Recommended Learning Resources</h2>
+        <h3>TryHackMe</h3>
+        <p>Complete the <strong>Nmap Room</strong> focusing on:</p>
+        <ul>
+            <li>Scanning Techniques</li>
+            <li>Service Enumeration</li>
+            <li>NSE Scripts</li>
+        </ul>
+
+        <h3>Official Documentation</h3>
+        <p>Read the <a href="https://nmap.org/book/" target="_blank" style="color: var(--accent-color);">Nmap Book</a> focusing on:</p>
+        <ul>
+            <li>Basic Scanning</li>
+            <li>Port States</li>
+            <li>Version Detection</li>
+        </ul>
+
+        <h3>YouTube Recommendations</h3>
+        <ul>
+            <li>NetworkChuck – Nmap Tutorial</li>
+            <li>IppSec – Nmap Enumeration Examples</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Hands-On Lab (2–3 Hours)</h2>
+        
+        <h3>Step 1 – Set Up Metasploitable2</h3>
+        <p>Metasploitable2 is an intentionally vulnerable Linux machine designed for cybersecurity training.</p>
+        <ol>
+            <li>Download Metasploitable2.</li>
+            <li>Extract the downloaded ZIP file.</li>
+            <li>Open VirtualBox.</li>
+            <li>Create a new virtual machine.</li>
+            <li>Use the extracted VMDK file as the hard disk.</li>
+            <li>Configure the network adapter as: <strong>Host-Only Adapter</strong> OR <strong>Internal Network</strong>.</li>
+            <li>Start the VM.</li>
+        </ol>
+        <p><strong>Default Credentials:</strong> Username: <code>msfadmin</code> | Password: <code>msfadmin</code></p>
+
+        <h3>Step 2 – Identify Target IP Address</h3>
+        <p>Inside Metasploitable2, run:</p>
+        <pre><code>ip addr</code></pre>
+        <p>Record the IP address (Example: <code>192.168.56.101</code>).</p>
+
+        <h3>Step 3 – Perform Basic Scan</h3>
+        <pre><code>nmap &lt;target_IP&gt;</code></pre>
+        <p><strong>Purpose:</strong> Discover open ports and identify basic services.</p>
+
+        <h3>Step 4 – SYN Scan with Version Detection</h3>
+        <pre><code>sudo nmap -sS -sV &lt;target_IP&gt;</code></pre>
+        <p><strong>Purpose:</strong> Perform stealth scanning and detect service versions.</p>
+
+        <h3>Step 5 – Aggressive Scan</h3>
+        <pre><code>sudo nmap -A -T4 &lt;target_IP&gt;</code></pre>
+        <p><strong>Purpose:</strong> Detect operating system, run default scripts, perform traceroute, and collect detailed information.</p>
+
+        <h3>Step 6 – Vulnerability Script Scan</h3>
+        <pre><code>sudo nmap -sV -p 21,22,80,443 --script vuln &lt;target_IP&gt;</code></pre>
+        <p><strong>Purpose:</strong> Identify known vulnerabilities, enumerate services, and practice security assessment techniques.</p>
+    </section>
+
+    <section>
+        <h2>Understanding Nmap Results</h2>
+        <ul>
+            <li><strong>Open:</strong> A service is actively listening on that port. <br><em>Example:</em> <code>22/tcp open ssh</code></li>
+            <li><strong>Closed:</strong> No service is listening. <br><em>Example:</em> <code>443/tcp closed https</code></li>
+            <li><strong>Filtered:</strong> A firewall or filtering device is blocking access. <br><em>Example:</em> <code>80/tcp filtered http</code></li>
+        </ul>
+    </section>
+
+    <section class="card alert-danger">
+        <h2>Safety Guidelines</h2>
+        <p><strong>Only scan:</strong> Your Kali VM, Metasploitable2, systems you own, or authorized lab environments.</p>
+        <p><strong>Never scan:</strong> Public IP addresses, company networks without permission, or unknown systems.</p>
+        <p><em>Unauthorized scanning may violate laws or policies.</em></p>
+    </section>
+</body>
+</html>
