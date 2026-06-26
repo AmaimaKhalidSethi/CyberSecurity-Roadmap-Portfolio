@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 12: Vulnerability Scanning with OpenVAS / Greenbone in Docker</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --success-color: #2ea44f;
+            --border-color: #30363d;
+            --code-bg: #090d16;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .badge {
+            background-color: #238636;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            color: #f0f6fc;
+        }
+
+        p, li {
+            color: #8b949e;
+        }
+
+        strong {
+            color: #f0f6fc;
+        }
+
+        .step-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9em;
+            color: #ff7b72;
+        }
+
+        pre code {
+            color: #e6edf3;
+        }
+
+        .note {
+            background-color: rgba(56, 139, 253, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 0 6px 6px 0;
+            margin: 20px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="badge">Day 12 of 120</span>
+        <h1>Vulnerability Scanning with OpenVAS / Greenbone</h1>
+        <p>120-Day Cybersecurity Learning Roadmap • Docker Deployment Guide</p>
+    </header>
+
+    <section>
+        <h2>Overview & Objectives</h2>
+        <p>Today's focus covers the foundational concepts of vulnerability management, mapping out risk severity, and deploying automated tools to find known exposure points.</p>
+        <ul>
+            <li><strong>Concepts:</strong> Network vs. Vulnerability Scanning, CVEs, CVSS Scores, Lifecycle Management.</li>
+            <li><strong>Target:</strong> Metasploitable2 (Host vulnerability simulation).</li>
+            <li><strong>Tooling:</strong> Greenbone Community Containers (Docker).</li>
+        </ul>
+    </section>
+
+    <h2>Step-by-Step Docker Setup</h2>
+
+    <div class="step-card">
+        <h3><span class="step-number">1</span>Prepare the Environment</h3>
+        <p>Ensure you have Docker and Docker Compose installed on your host system. Create a dedicated directory for your Greenbone setup to keep data persistent and organized.</p>
+        <pre><code>mkdir -p ~/cyber-lab/openvas
+cd ~/cyber-lab/openvas</code></pre>
+    </div>
+
+    <div class="step-card">
+        <h3><span class="step-number">2</span>Create the Docker Compose File</h3>
+        <p>Greenbone provides an official community container stack. Create a file named <code>docker-compose.yml</code> using the highly stable, pre-packaged Greenbone Community Container setup:</p>
+        
+        <pre><code>version: '3.8'
+
+services:
+  gvm:
+    image: greenbone/gvm-community:latest
+    container_name: openvas_gvm
+    ports:
+      - "9392:9392" # Web UI HTTPS Port
+    volumes:
+      - gvm-data:/var/lib/gvm
+    restart: always
+
+volumes:
+  gvm-data:</code></pre>
+        <div class="note">
+            <strong>Note:</strong> The official Community Containers pull multiple microservices (gvmd, openvas-scanner, gsad). Using bundled community images like <code>greenbone/gvm-community</code> or <code>securecodebox/operator</code> simplifies local development significantly.
+        </div>
+    </div>
+
+    <div class="step-card">
+        <h3><span class="step-number">3</span>Launch the Stack</h3>
+        <p>Start the containers in detached mode. This step will automatically fetch the container images, provision the database, and spin up the web interface.</p>
+        <pre><code>docker-compose up -d</code></pre>
+    </div>
+
+    <div class="step-card">
+        <h3><span class="step-number">4</span>Update Vulnerability Databases (VT/SCAP Feeds)</h3>
+        <p>OpenVAS relies on up-to-date vulnerability tests. Syncing the feeds can take anywhere from 10 to 30 minutes depending on your network connection. Run this inside the container:</p>
+        <pre><code>docker exec -it openvas_gvm greenbone-feed-sync</code></pre>
+        <p>To check the logs and monitor the syncing progress, use:</p>
+        <pre><code>docker logs -f openvas_gvm</code></pre>
+    </div>
+
+    <div class="step-card">
+        <h3><span class="step-number">5</span>Access the Web UI & Run Scans</h3>
+        <p>Once the container is fully up and initialized, open your browser and navigate to:</p>
+        <pre><code>https://localhost:9392</code></pre>
+        <p><strong>Default Credentials:</strong></p>
+        <ul>
+            <li><strong>Username:</strong> admin</li>
+            <li><strong>Password:</strong> admin (or check container creation logs for a randomly generated string)</li>
+        </ul>
+        <p>From here, you can navigate to <strong>Scans > Tasks</strong>, target your Metasploitable2 IP instance, and analyze findings based on CVSS severity thresholds.</p>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid var(--border-color); margin-top: 40px;">
+
+    <footer style="text-align: center; padding: 20px 0; font-size: 0.85em;">
+        <p>Keep moving forward. Stay curious, stay secure.</p>
+    </footer>
+</div>
+
+</body>
+</html>
