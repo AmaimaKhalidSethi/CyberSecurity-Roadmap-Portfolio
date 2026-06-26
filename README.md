@@ -27,6 +27,13 @@ Welcome to my cybersecurity portfolio! This repository serves as the central rep
 * 📊 [Threat Analysis Infographic](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/threat_analysis_infographic.html)
 * 🌐 [Day 3: Virtualization & Lab Setup](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_3_virtualization_lab_setup.html)
 * 🌐 [Day 4: Linux Basics](https://AmaimaKhalidSethi.github.io/CyberSecurity-Roadmap-Portfolio/day_4_linux_basics.html)
+* 🌐 [Day 5: Linux Permissions, Users & Processes](day_5_linux-basics.html)
+* 🌐 [Day 6: Text Processing & Log Analysis](day_6_text_processing_and_log_analysis.html)
+* 🌐 [Day 7: Basic Network Exploration](day_7_basic_network_exploration.html)
+* 🌐 [Day 8: Common Network Protocols](day_8_Common_Network_Protocols.html)
+* 🌐 [Day 9: Wireshark Basics & Protocol Deep Dive](day_9_wireshark_basics_protocol_deepdive.html)
+* 🌐 [Day 10: Firewalls & Common Ports](day_10_firewalls_common_ports.html)
+* 🌐 [Day 11: Nmap Basics](day_11_nmap.html)
   
 ---
 
