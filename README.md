@@ -34,6 +34,7 @@ Welcome to my cybersecurity portfolio! This repository serves as the central rep
 * 🌐 [Day 9: Wireshark Basics & Protocol Deep Dive](day_9_wireshark_basics_protocol_deepdive.html)
 * 🌐 [Day 10: Firewalls & Common Ports](day_10_firewalls_common_ports.html)
 * 🌐 [Day 11: Nmap Basics](day_11_nmap.html)
+* 🌐 [Day 12: OpenVAS Vulnerability Scanning](day_12_openVAS.html)
   
 ---
 
