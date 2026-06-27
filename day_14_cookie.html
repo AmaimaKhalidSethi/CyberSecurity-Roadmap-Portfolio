@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 14 — HTTP, HTTPS, Requests, Responses &amp; Cookies</title>
+<style>
+:root{
+  --bg:#0a0f0f;
+  --bg-panel:#0f1716;
+  --bg-panel-raised:#131e1d;
+  --line:#1f2e2c;
+  --line-soft:#16201f;
+  --petrol:#1f8a8a;
+  --petrol-bright:#3fd1c7;
+  --amber:#e8a33d;
+  --text:#cfe3e0;
+  --text-dim:#7c9794;
+  --text-faint:#4c6361;
+  --crit:#d4453a;
+  --high:#e8743d;
+  --med:#e8c23d;
+  --low:#4ea0e0;
+  --log:#5fb88f;
+  --get:#4ea0e0;
+  --post:#5fb88f;
+  --put:#e8c23d;
+  --del:#d4453a;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+body{
+  margin:0;
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -5%, rgba(31,138,138,0.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(63,209,199,0.05), transparent 55%);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:15.5px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+
+a{color:var(--petrol-bright); text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--petrol-bright); outline-offset:2px;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+}
+
+/* ---------- layout shell ---------- */
+.shell{
+  display:grid;
+  grid-template-columns: 260px 1fr;
+  max-width:1320px;
+  margin:0 auto;
+}
+@media (max-width: 900px){
+  .shell{grid-template-columns: 1fr;}
+  .rail{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+}
+
+/* ---------- side rail ---------- */
+.rail{
+  position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  padding:28px 18px 40px 28px; border-right:1px solid var(--line);
+}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.rail-brand{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--text-faint); text-transform:uppercase; margin-bottom:4px;}
+.rail-title{font-family:var(--sans); font-weight:700; font-size:18px; color:var(--text); margin:0 0 26px 0; letter-spacing:-0.01em;}
+.rail-title span{color:var(--petrol-bright);}
+.rail nav{display:flex; flex-direction:column; gap:2px;}
+.rail nav a{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); padding:7px 10px; border-radius:5px; display:flex; gap:9px; align-items:baseline;}
+.rail nav a:hover{background:var(--bg-panel-raised); color:var(--petrol-bright); text-decoration:none;}
+.rail nav a .n{color:var(--text-faint); min-width:20px;}
+.rail-meta{margin-top:30px; padding-top:18px; border-top:1px solid var(--line-soft); font-family:var(--mono); font-size:11px; color:var(--text-faint); line-height:1.8;}
+.rail-meta b{color:var(--text-dim); font-weight:600;}
+
+/* ---------- main column ---------- */
+main{padding:0 0 80px 0; min-width:0;}
+
+.hero{padding:64px 56px 40px 56px; border-bottom:1px solid var(--line); position:relative;}
+.hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--petrol-bright); display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+.hero-eyebrow::before{content:""; width:8px;height:8px; border-radius:50%; background:var(--log); box-shadow:0 0 0 3px rgba(95,184,143,0.18);}
+.hero h1{font-size:clamp(28px, 4vw, 42px); line-height:1.1; margin:0 0 16px 0; letter-spacing:-0.02em; font-weight:800; max-width:760px;}
+.hero h1 .accent{color:var(--petrol-bright);}
+.hero p.lede{max-width:640px; color:var(--text-dim); font-size:16px; margin:0 0 28px 0;}
+.hero-tags{display:flex; flex-wrap:wrap; gap:8px;}
+.tag{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:5px; color:var(--text-dim); background:var(--bg-panel);}
+
+.flow-strip{display:flex; align-items:center; gap:0; margin-top:36px; padding:18px 0 4px 0; overflow-x:auto;}
+.flow-node{font-family:var(--mono); font-size:12px; color:var(--text); background:var(--bg-panel); border:1px solid var(--line); border-radius:6px; padding:9px 13px; white-space:nowrap; flex-shrink:0;}
+.flow-node b{color:var(--petrol-bright); display:block; font-size:10px; letter-spacing:0.08em; margin-bottom:3px; text-transform:uppercase; font-weight:600;}
+.flow-arrow{color:var(--text-faint); padding:0 10px; font-size:14px; flex-shrink:0;}
+
+/* ---------- section ---------- */
+section.phase{padding:48px 56px; border-bottom:1px solid var(--line); scroll-margin-top:20px;}
+section.phase:nth-of-type(odd){background:linear-gradient(180deg, rgba(31,138,138,0.025), transparent 200px);}
+.phase-head{display:flex; align-items:baseline; gap:18px; margin-bottom:8px;}
+.phase-num{font-family:var(--mono); font-size:13px; color:var(--petrol-bright); border:1px solid var(--petrol); border-radius:5px; padding:3px 9px; flex-shrink:0;}
+.phase-head h2{font-size:24px; margin:0; font-weight:750; letter-spacing:-0.01em;}
+.phase-sub{color:var(--text-dim); font-size:14.5px; margin:0 0 28px 0; max-width:680px;}
+
+h3{font-size:16.5px; font-weight:700; margin:32px 0 12px 0; color:var(--text); display:flex; align-items:center; gap:9px;}
+h3 .h3-mark{color:var(--petrol-bright); font-family:var(--mono); font-size:13px;}
+h3:first-of-type{margin-top:8px;}
+
+p{max-width:760px; margin:0 0 14px 0;}
+ul, ol{max-width:760px; padding-left:22px; margin:0 0 16px 0;}
+li{margin-bottom:7px;}
+strong{color:var(--text); font-weight:650;}
+code.inline{font-family:var(--mono); background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:4px; padding:1.5px 6px; font-size:0.88em; color:var(--petrol-bright);}
+
+/* ---------- terminal block ---------- */
+.term{background:#070b0a; border:1px solid var(--line); border-radius:9px; margin:16px 0 24px 0; max-width:820px; overflow:hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgba(0,0,0,0.6);}
+.term-bar{display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--bg-panel); border-bottom:1px solid var(--line);}
+.term-dot{width:9px; height:9px; border-radius:50%;}
+.term-dot.r{background:#d4453a;}
+.term-dot.y{background:#e8c23d;}
+.term-dot.g{background:#5fb88f;}
+.term-label{font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-left:8px;}
+.term pre{margin:0; padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:#d6ebe7;}
+.term pre::-webkit-scrollbar{height:6px;}
+.term pre::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.term .c{color:var(--text-faint); font-style:italic;}
+.term .out{color:var(--log);}
+.term .prompt{color:var(--petrol-bright);}
+.term .var{color:var(--amber);}
+.term .hdr{color:#8fb8e0;}
+.term .meth{color:var(--petrol-bright); font-weight:700;}
+
+/* ---------- callouts ---------- */
+.callout{border-radius:8px; border:1px solid var(--line); padding:14px 18px; margin:18px 0 22px 0; max-width:760px; font-size:14px;}
+.callout-head{font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
+.callout.note{background:rgba(31,138,138,0.07); border-color:rgba(31,138,138,0.35);}
+.callout.note .callout-head{color:var(--petrol-bright);}
+.callout.warn{background:rgba(232,116,61,0.07); border-color:rgba(232,116,61,0.35);}
+.callout.warn .callout-head{color:var(--high);}
+.callout.danger{background:rgba(212,69,58,0.08); border-color:rgba(212,69,58,0.4);}
+.callout.danger .callout-head{color:var(--crit);}
+.callout.tip{background:rgba(95,184,143,0.07); border-color:rgba(95,184,143,0.35);}
+.callout.tip .callout-head{color:var(--log);}
+.callout p:last-child{margin-bottom:0;}
+
+/* ---------- tables ---------- */
+.table-wrap{overflow-x:auto; margin:16px 0 24px 0; max-width:900px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; padding:10px 14px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:11px 14px; border-bottom:1px solid var(--line-soft); color:var(--text-dim); vertical-align:top;}
+td code.inline{white-space:nowrap;}
+tr:hover td{background:rgba(31,138,138,0.04);}
+
+.pill{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:4px; white-space:nowrap;}
+.pill::before{content:""; width:7px; height:7px; border-radius:50%;}
+.pill.s2{color:var(--log); background:rgba(95,184,143,0.12);}
+.pill.s2::before{background:var(--log);}
+.pill.s3{color:var(--low); background:rgba(78,160,224,0.12);}
+.pill.s3::before{background:var(--low);}
+.pill.s4{color:var(--med); background:rgba(232,194,61,0.12);}
+.pill.s4::before{background:var(--med);}
+.pill.s5{color:var(--crit); background:rgba(212,69,58,0.12);}
+.pill.s5::before{background:var(--crit);}
+
+.method{display:inline-flex; align-items:center; font-family:var(--mono); font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:4px; letter-spacing:0.04em;}
+.method.get{color:var(--get); background:rgba(78,160,224,0.13);}
+.method.post{color:var(--post); background:rgba(95,184,143,0.13);}
+.method.put{color:var(--put); background:rgba(232,194,61,0.13);}
+.method.delete{color:var(--del); background:rgba(212,69,58,0.13);}
+.method.patch{color:var(--amber); background:rgba(232,163,61,0.13);}
+
+/* ---------- two col grid ---------- */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:900px; margin:18px 0 24px 0;}
+@media (max-width:760px){.grid2{grid-template-columns:1fr;}}
+.card{background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px;}
+.card h4{margin:0 0 8px 0; font-size:14px; color:var(--petrol-bright); font-family:var(--mono);}
+.card p{margin:0; font-size:13.5px; color:var(--text-dim);}
+.card ul{margin:8px 0 0 0; padding-left:18px; font-size:13.5px; color:var(--text-dim);}
+.card li{margin-bottom:4px;}
+
+/* ---------- HTTP vs HTTPS compare ---------- */
+.vs-wrap{display:grid; grid-template-columns:1fr auto 1fr; gap:0; max-width:760px; margin:18px 0 26px 0; align-items:stretch;}
+@media (max-width:640px){.vs-wrap{grid-template-columns:1fr; gap:14px;}}
+.vs-card{background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:20px;}
+.vs-card.bad{border-color:rgba(212,69,58,0.35);}
+.vs-card.good{border-color:rgba(95,184,143,0.35);}
+.vs-card h4{margin:0 0 12px 0; font-family:var(--mono); font-size:14px; display:flex; align-items:center; gap:8px;}
+.vs-card.bad h4{color:var(--crit);}
+.vs-card.good h4{color:var(--log);}
+.vs-card ul{margin:0; padding-left:18px; font-size:13.5px;}
+.vs-divider{display:flex; align-items:center; justify-content:center; padding:0 18px; font-family:var(--mono); font-size:12px; color:var(--text-faint); font-weight:700;}
+@media (max-width:640px){.vs-divider{display:none;}}
+
+/* ---------- checklist / steps ---------- */
+.checklist{list-style:none; padding:0; max-width:760px;}
+.checklist li{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line-soft);}
+.checklist li:last-child{border-bottom:none;}
+.checklist .box{flex-shrink:0; width:16px; height:16px; border:1.5px solid var(--petrol); border-radius:3px; margin-top:2px;}
+
+.steps{list-style:none; padding:0; max-width:780px; counter-reset:step;}
+.steps > li{counter-increment:step; position:relative; padding-left:38px; margin-bottom:22px;}
+.steps > li::before{content:counter(step); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:6px; background:var(--bg-panel-raised); border:1px solid var(--petrol); color:var(--petrol-bright); font-family:var(--mono); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+.steps > li > strong{display:block; margin-bottom:4px; color:var(--text); font-size:14.5px;}
+
+/* ---------- collapsibles ---------- */
+details.trouble{border:1px solid var(--line); border-radius:7px; margin-bottom:10px; max-width:820px; background:var(--bg-panel); overflow:hidden;}
+details.trouble summary{padding:13px 16px; cursor:pointer; font-family:var(--mono); font-size:13px; color:var(--text); list-style:none; display:flex; align-items:center; gap:10px;}
+details.trouble summary::-webkit-details-marker{display:none;}
+details.trouble summary::before{content:"▸"; color:var(--petrol-bright); transition:transform 0.15s ease; flex-shrink:0;}
+details.trouble[open] summary::before{transform:rotate(90deg);}
+details.trouble .trouble-body{padding:0 16px 16px 16px; border-top:1px solid var(--line-soft); font-size:13.5px; color:var(--text-dim);}
+details.trouble .trouble-body p:first-child{margin-top:14px;}
+
+/* ---------- cookie tag cards ---------- */
+.cookie-row{display:grid; grid-template-columns:170px 1fr; gap:14px; align-items:flex-start; padding:13px 16px; border:1px solid var(--line); border-radius:7px; margin-bottom:8px; max-width:820px; background:var(--bg-panel);}
+@media (max-width:640px){.cookie-row{grid-template-columns:1fr;}}
+.cookie-name{font-family:var(--mono); font-weight:700; color:var(--petrol-bright); font-size:13.5px;}
+.cookie-desc{font-size:13px; color:var(--text-dim);}
+
+/* ---------- deliverables box ---------- */
+.deliverables{background:var(--bg-panel); border:1px solid var(--line); border-radius:9px; padding:22px 24px; max-width:760px; margin:18px 0 26px 0;}
+.deliverables h4{margin:0 0 12px 0; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--petrol-bright);}
+.deliverables .file-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-family:var(--mono); font-size:13px; color:var(--text);}
+.deliverables .file-item::before{content:"📄"; font-size:13px; filter:grayscale(1) brightness(1.4);}
+
+/* ---------- footer ---------- */
+footer{padding:40px 56px; font-family:var(--mono); font-size:11.5px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+@media (max-width:900px){
+  .hero{padding:40px 24px 32px;}
+  section.phase{padding:36px 24px;}
+  footer{padding:30px 24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ===================== SIDE RAIL ===================== -->
+  <aside class="rail">
+    <div class="rail-brand">120-day cybersecurity roadmap // web security module</div>
+    <p class="rail-title">Day <span>14</span> — HTTP &amp; Cookies</p>
+    <nav>
+      <a href="#overview"><span class="n">00</span> Overview &amp; why it matters</a>
+      <a href="#whathttp"><span class="n">01</span> What is HTTP?</a>
+      <a href="#httpvshttps"><span class="n">02</span> HTTP vs HTTPS</a>
+      <a href="#flow"><span class="n">03</span> The request/response flow</a>
+      <a href="#request"><span class="n">04</span> Anatomy of an HTTP request</a>
+      <a href="#methods"><span class="n">05</span> HTTP methods</a>
+      <a href="#response"><span class="n">06</span> Anatomy of an HTTP response</a>
+      <a href="#status"><span class="n">07</span> Status codes</a>
+      <a href="#headers"><span class="n">08</span> Headers</a>
+      <a href="#cookies"><span class="n">09</span> Cookies</a>
+      <a href="#sessions"><span class="n">10</span> Sessions</a>
+      <a href="#cookieattacks"><span class="n">11</span> Why cookies matter in security</a>
+      <a href="#lab"><span class="n">12</span> Hands-on lab — DVWA &amp; curl</a>
+      <a href="#deliverables"><span class="n">13</span> Required deliverables</a>
+      <a href="#resources"><span class="n">14</span> Study resources</a>
+      <a href="#tips"><span class="n">15</span> Beginner tips &amp; troubleshooting</a>
+      <a href="#cheatsheet"><span class="n">16</span> Cheat-sheet</a>
+      <a href="#nextsteps"><span class="n">17</span> Next steps</a>
+    </nav>
+    <div class="rail-meta">
+      <div><b>Lab target:</b> DVWA (Damn Vulnerable Web App)</div>
+      <div><b>Tools:</b> Browser DevTools, curl</div>
+      <div><b>Est. time:</b> 4–5 hrs (learning + hands-on)</div>
+      <div><b>Leads into:</b> Day 15 — Burp Suite</div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main>
+
+    <div class="hero">
+      <div class="hero-eyebrow">day 14 · web security foundations</div>
+      <h1>HTTP, HTTPS, Requests, Responses &amp; <span class="accent">Cookies</span> — in-depth guide</h1>
+      <p class="lede">
+        Every web vulnerability you'll learn from here on — SQL injection, XSS, CSRF, session hijacking,
+        auth bypass — happens inside an HTTP request or response. Before touching Burp Suite, you need to
+        be fluent in reading the conversation it's intercepting.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">http / https</span>
+        <span class="tag">request &amp; response anatomy</span>
+        <span class="tag">status codes</span>
+        <span class="tag">headers</span>
+        <span class="tag">cookies &amp; sessions</span>
+        <span class="tag">DVWA + curl + DevTools</span>
+      </div>
+
+      <div class="flow-strip">
+        <div class="flow-node"><b>01 · client</b>Browser builds a request</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>02 · wire</b>Sent over TCP (port 80/443)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>03 · server</b>Server parses &amp; processes</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>04 · response</b>Status + headers + body returned</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>05 · render</b>Browser displays the page</div>
+      </div>
+    </div>
+
+    <!-- ===== 00 OVERVIEW ===== -->
+    <section class="phase" id="overview">
+      <div class="phase-head">
+        <span class="phase-num">00</span>
+        <h2>Overview &amp; why this matters</h2>
+      </div>
+      <p class="phase-sub">The protocol underneath every login page, banking site, and API call you'll ever test.</p>
+
+      <p>
+        HTTP (HyperText Transfer Protocol) is how web browsers and web servers talk to each other. Every
+        time you open a website, your browser sends a <strong>request</strong>, and the server sends back a
+        <strong>response</strong>. That exchange — and nothing more exotic than that — is the substrate that
+        every web attack technique you'll study later sits on top of.
+      </p>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ the restaurant analogy</div>
+        <p>
+          You place an order (<strong>Request</strong>) → the kitchen prepares it → the food arrives at your
+          table (<strong>Response</strong>). Every HTTP exchange follows this exact shape, no matter how
+          complex the website. Keep this mental model — it makes headers, cookies, and status codes click
+          much faster than memorizing them as isolated facts.
+        </p>
+      </div>
+
+      <p>
+        As a SOC Analyst, Security Analyst, Penetration Tester, or Bug Bounty Hunter, you will spend a
+        large fraction of your working hours staring at exactly this: requests, responses, cookies,
+        headers, and tokens, trying to figure out what happened or what can be made to happen differently.
+      </p>
+    </section>
+
+    <!-- ===== 01 WHAT IS HTTP ===== -->
+    <section class="phase" id="whathttp">
+      <div class="phase-head">
+        <span class="phase-num">01</span>
+        <h2>What is HTTP?</h2>
+      </div>
+      <p class="phase-sub">The simplest possible example, traced end to end.</p>
+
+      <p>You type a URL. Three things happen, in order:</p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">conceptual trace</span></div>
+        <pre><span class="c"># 1. you type this into the address bar</span>
+https://example.com
+
+<span class="c"># 2. browser sends this request</span>
+<span class="meth">GET</span> / HTTP/1.1
+
+<span class="c"># 3. server replies with this status line, plus the page itself</span>
+<span class="out">HTTP/1.1 200 OK</span></pre>
+      </div>
+
+      <p>
+        That's the entire core loop. Everything else in this guide — methods, headers, cookies, status
+        codes — is detail layered on top of "browser asks, server answers."
+      </p>
+    </section>
+
+    <!-- ===== 02 HTTP VS HTTPS ===== -->
+    <section class="phase" id="httpvshttps">
+      <div class="phase-head">
+        <span class="phase-num">02</span>
+        <h2>HTTP vs HTTPS</h2>
+      </div>
+      <p class="phase-sub">Same protocol, one critical difference: whether anyone watching the wire can read what's on it.</p>
+
+      <div class="vs-wrap">
+        <div class="vs-card bad">
+          <h4>⚠ HTTP — <code class="inline" style="color:var(--crit); background:transparent; border:none; padding:0;">http://example.com</code></h4>
+          <ul>
+            <li>Data sent in <strong>plain text</strong></li>
+            <li>Anyone intercepting traffic can read it</li>
+            <li>Uses <strong>port 80</strong></li>
+            <li>No confidentiality, integrity, or authentication guarantees</li>
+          </ul>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="vs-card good">
+          <h4>✓ HTTPS — <code class="inline" style="color:var(--log); background:transparent; border:none; padding:0;">https://example.com</code></h4>
+          <ul>
+            <li>HTTP + <strong>TLS encryption</strong></li>
+            <li>Encrypts all communication between browser and server</li>
+            <li>Uses <strong>port 443</strong></li>
+            <li>Provides confidentiality, integrity, and authentication</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>
+        Most modern websites use HTTPS by default now — but as a security learner you'll deliberately spend
+        time in HTTP-only lab environments (like DVWA over plain HTTP) precisely <em>because</em> you can see
+        every byte of the traffic without decryption getting in the way first.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-head">▸ TLS is doing the heavy lifting</div>
+        <p>
+          HTTPS isn't a different protocol from HTTP so much as HTTP running inside an encrypted TLS tunnel.
+          The request/response structure you learn today is identical either way — TLS just wraps it in a
+          layer the browser and server negotiate before any HTTP data is exchanged.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 03 FLOW ===== -->
+    <section class="phase" id="flow">
+      <div class="phase-head">
+        <span class="phase-num">03</span>
+        <h2>The request/response flow</h2>
+      </div>
+      <p class="phase-sub">Every webpage you've ever loaded followed exactly these five steps.</p>
+
+      <ol class="steps">
+        <li><strong>Browser sends a Request</strong>
+          Built from the URL you typed, a link you clicked, or a form you submitted.
+        </li>
+        <li><strong>Server receives the Request</strong>
+          The web server (Apache, Nginx, IIS, etc.) accepts the connection and parses what was asked for.
+        </li>
+        <li><strong>Server processes it</strong>
+          Runs application logic — queries a database, checks authentication, builds the page — whatever
+          the requested resource requires.
+        </li>
+        <li><strong>Server sends a Response</strong>
+          Status code, headers, and (usually) a body containing HTML, JSON, an image, or other content.
+        </li>
+        <li><strong>Browser displays the page</strong>
+          Parses the HTML/CSS/JS in the response body and renders what you see on screen.
+        </li>
+      </ol>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ why this flow is the foundation for everything later</div>
+        <p>
+          SQL injection happens at step 3 (malicious input changes what the server's processing logic does).
+          XSS happens at step 5 (malicious content in the response gets executed by the browser instead of
+          just displayed). Session hijacking exploits step 1/2 (stealing or forging the credentials that
+          prove who's making the request). You cannot meaningfully understand any of those attacks without
+          this five-step model first.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 04 REQUEST ANATOMY ===== -->
+    <section class="phase" id="request">
+      <div class="phase-head">
+        <span class="phase-num">04</span>
+        <h2>Anatomy of an HTTP request</h2>
+      </div>
+      <p class="phase-sub">What the client actually sends, byte for byte.</p>
+
+      <p>A request is built from four parts:</p>
+      <ul>
+        <li><strong>Request Method</strong> — what kind of action (GET, POST, etc.)</li>
+        <li><strong>URL</strong> — which resource on the server</li>
+        <li><strong>Headers</strong> — metadata about the request</li>
+        <li><strong>Cookies</strong> — small stored values sent along automatically</li>
+        <li><strong>Body</strong> — data payload (present on POST/PUT, usually absent on GET)</li>
+      </ul>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">raw HTTP request</span></div>
+        <pre><span class="meth">GET</span> /login HTTP/1.1
+<span class="hdr">Host:</span> example.com
+<span class="hdr">User-Agent:</span> Firefox
+<span class="hdr">Accept:</span> text/html</pre>
+      </div>
+
+      <p>
+        Line 1 is the <strong>request line</strong> — method, path, and HTTP version. Every line after that
+        is a <strong>header</strong> — a <code class="inline">Name: value</code> pair. This particular
+        example has no body because it's a GET request asking the server to hand over the login page, not
+        submitting anything to it.
+      </p>
+    </section>
+
+    <!-- ===== 05 METHODS ===== -->
+    <section class="phase" id="methods">
+      <div class="phase-head">
+        <span class="phase-num">05</span>
+        <h2>HTTP methods</h2>
+      </div>
+      <p class="phase-sub">What kind of action the request is asking the server to perform.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4><span class="method get">GET</span></h4>
+          <p>Requests data. Used for viewing pages, searching, reading data.</p>
+          <ul><li><code class="inline">GET /products</code></li></ul>
+        </div>
+        <div class="card">
+          <h4><span class="method post">POST</span></h4>
+          <p>Sends data to the server. Used for login, registration, forms, uploads.</p>
+          <ul><li><code class="inline">POST /login</code></li></ul>
+        </div>
+        <div class="card">
+          <h4><span class="method put">PUT</span></h4>
+          <p>Updates existing data — typically replaces a resource in full.</p>
+        </div>
+        <div class="card">
+          <h4><span class="method delete">DELETE</span></h4>
+          <p>Deletes existing data on the server.</p>
+        </div>
+        <div class="card">
+          <h4><span class="method patch">PATCH</span></h4>
+          <p>Updates <em>part</em> of an existing resource, rather than replacing it entirely like PUT.</p>
+        </div>
+      </div>
+
+      <div class="callout note">
+        <div class="callout-head">▸ why GET vs POST matters for security</div>
+        <p>
+          GET requests put their parameters in the URL itself — visible in browser history, server logs, and
+          the address bar. POST requests put parameters in the body, slightly less exposed but
+          <strong>not encrypted or hidden by default</strong> — over plain HTTP, a POST body is just as
+          readable to an interceptor as a GET parameter. This distinction matters a lot once you start
+          testing for parameter tampering and injection points.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 06 RESPONSE ANATOMY ===== -->
+    <section class="phase" id="response">
+      <div class="phase-head">
+        <span class="phase-num">06</span>
+        <h2>Anatomy of an HTTP response</h2>
+      </div>
+      <p class="phase-sub">What comes back after the server processes your request.</p>
+
+      <p>A response contains three parts:</p>
+      <ul>
+        <li><strong>Status Code</strong> — did it work, and if not, why not</li>
+        <li><strong>Headers</strong> — metadata about the response</li>
+        <li><strong>Response Body</strong> — the actual content (HTML, JSON, image bytes, etc.)</li>
+      </ul>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">raw HTTP response</span></div>
+        <pre><span class="out">HTTP/1.1 200 OK</span>
+<span class="hdr">Content-Type:</span> text/html
+
+&lt;html&gt;...&lt;/html&gt;</pre>
+      </div>
+
+      <p>
+        Line 1 is the <strong>status line</strong> — HTTP version, status code, and a human-readable reason
+        phrase ("OK"). Everything after is headers, then a blank line, then the body.
+      </p>
+    </section>
+
+    <!-- ===== 07 STATUS CODES ===== -->
+    <section class="phase" id="status">
+      <div class="phase-head">
+        <span class="phase-num">07</span>
+        <h2>HTTP status codes</h2>
+      </div>
+      <p class="phase-sub">The single fastest signal for what just happened to a request — learn these cold.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Code</th><th>Class</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill s2">200 OK</span></td><td>Success</td><td>Everything worked successfully.</td></tr>
+            <tr><td><span class="pill s3">301 / 302</span></td><td>Redirect</td><td>Page redirects somewhere else.</td></tr>
+            <tr><td><span class="pill s4">400 Bad Request</span></td><td>Client error</td><td>Client sent an invalid request.</td></tr>
+            <tr><td><span class="pill s4">401 Unauthorized</span></td><td>Client error</td><td>Authentication required.</td></tr>
+            <tr><td><span class="pill s4">403 Forbidden</span></td><td>Client error</td><td>Server understands the request but refuses access.</td></tr>
+            <tr><td><span class="pill s4">404 Not Found</span></td><td>Client error</td><td>Requested page doesn't exist.</td></tr>
+            <tr><td><span class="pill s5">500 Internal Server Error</span></td><td>Server error</td><td>Problem occurred on the server.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ the quick mental grouping</div>
+        <p>
+          2xx = it worked. 3xx = go look somewhere else. 4xx = <strong>you</strong> (the client) did
+          something the server didn't like. 5xx = the server broke on its own end, not because of anything
+          you sent. This grouping alone will get you most of the way through reading unfamiliar status codes
+          you haven't memorized yet.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 08 HEADERS ===== -->
+    <section class="phase" id="headers">
+      <div class="phase-head">
+        <span class="phase-num">08</span>
+        <h2>Headers</h2>
+      </div>
+      <p class="phase-sub">Metadata riding alongside every request and response — and a major target during security testing.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Common request headers</h4>
+          <ul>
+            <li><code class="inline">Host</code></li>
+            <li><code class="inline">User-Agent</code></li>
+            <li><code class="inline">Cookie</code></li>
+            <li><code class="inline">Accept</code></li>
+            <li><code class="inline">Authorization</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Common response headers</h4>
+          <ul>
+            <li><code class="inline">Content-Type</code></li>
+            <li><code class="inline">Content-Length</code></li>
+            <li><code class="inline">Server</code></li>
+            <li><code class="inline">Set-Cookie</code></li>
+            <li><code class="inline">Cache-Control</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <p>
+        During security testing, headers are where you'll find authentication tokens
+        (<code class="inline">Authorization</code>), session identifiers
+        (<code class="inline">Cookie</code> / <code class="inline">Set-Cookie</code>), server fingerprinting
+        clues (<code class="inline">Server</code>), and content-handling behavior
+        (<code class="inline">Content-Type</code>) that can reveal how the application processes input.
+      </p>
+    </section>
+
+    <!-- ===== 09 COOKIES ===== -->
+    <section class="phase" id="cookies">
+      <div class="phase-head">
+        <span class="phase-num">09</span>
+        <h2>Cookies</h2>
+      </div>
+      <p class="phase-sub">Small pieces of state the server asks your browser to hold onto and send back.</p>
+
+      <p>
+        Cookies are small pieces of data stored in the browser, used so a website can remember who you are
+        between requests — since HTTP itself has no built-in memory of previous requests.
+      </p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">example cookie</span></div>
+        <pre><span class="hdr">Cookie:</span> <span class="var">PHPSESSID=abc123xyz</span></pre>
+      </div>
+
+      <p>Cookies are commonly used for:</p>
+      <ul>
+        <li>Login sessions</li>
+        <li>User preferences</li>
+        <li>Shopping carts</li>
+        <li>Tracking</li>
+      </ul>
+
+      <h3><span class="h3-mark">◷</span> Types of cookies</h3>
+
+      <div class="cookie-row">
+        <span class="cookie-name">Session Cookie</span>
+        <span class="cookie-desc">Deleted when the browser closes — exists only for the current browsing session.</span>
+      </div>
+      <div class="cookie-row">
+        <span class="cookie-name">Persistent Cookie</span>
+        <span class="cookie-desc">Stored until a set expiration date, surviving across browser restarts.</span>
+      </div>
+      <div class="cookie-row">
+        <span class="cookie-name">Secure Cookie</span>
+        <span class="cookie-desc">Sent only over HTTPS — never transmitted over an unencrypted connection.</span>
+      </div>
+      <div class="cookie-row">
+        <span class="cookie-name">HttpOnly Cookie</span>
+        <span class="cookie-desc">Cannot be accessed using JavaScript — helps reduce the impact of XSS attacks by keeping the cookie out of reach of injected scripts.</span>
+      </div>
+
+      <div class="callout note">
+        <div class="callout-head">▸ Secure and HttpOnly are flags, not cookie types</div>
+        <p>
+          Technically <code class="inline">Secure</code> and <code class="inline">HttpOnly</code> are
+          attributes set on a <code class="inline">Set-Cookie</code> header
+          (<code class="inline">Set-Cookie: PHPSESSID=abc123; HttpOnly; Secure</code>), not separate kinds of
+          cookies from Session/Persistent. A single cookie can be persistent <em>and</em> Secure <em>and</em>
+          HttpOnly all at once. Worth keeping straight once you start reading real
+          <code class="inline">Set-Cookie</code> headers in DevTools.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 10 SESSIONS ===== -->
+    <section class="phase" id="sessions">
+      <div class="phase-head">
+        <span class="phase-num">10</span>
+        <h2>Sessions</h2>
+      </div>
+      <p class="phase-sub">How a stateless protocol fakes having a memory.</p>
+
+      <p>
+        A session allows a website to remember who you are after logging in. Instead of asking for your
+        password on every single page load, the server generates a unique session ID, stores it
+        server-side, and gives your browser a copy as a cookie. Every subsequent request includes that
+        cookie, and the server uses it to look up who you are.
+      </p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">example session cookie</span></div>
+        <pre><span class="hdr">Cookie:</span> <span class="var">PHPSESSID=8f2c9d1a</span></pre>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ the core risk in one sentence</div>
+        <p>
+          If an attacker steals this cookie — through XSS, network sniffing on unencrypted HTTP, or a
+          misconfigured CORS policy — they can present it to the server themselves and be treated as you,
+          fully authenticated, without ever knowing your password. This is <strong>session hijacking</strong>,
+          and it's why cookie handling gets so much scrutiny in security testing.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 11 COOKIE ATTACKS ===== -->
+    <section class="phase" id="cookieattacks">
+      <div class="phase-head">
+        <span class="phase-num">11</span>
+        <h2>Why cookies matter in cybersecurity</h2>
+      </div>
+      <p class="phase-sub">The attack categories that all trace back to today's material.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Session Hijacking</h4>
+          <p>Stealing or guessing a valid session ID to impersonate a logged-in user without their credentials.</p>
+        </div>
+        <div class="card">
+          <h4>Cookie Theft</h4>
+          <p>Extracting cookie values via XSS, malware, packet sniffing on unencrypted connections, or a misconfigured app exposing them.</p>
+        </div>
+        <div class="card">
+          <h4>Session Fixation</h4>
+          <p>Forcing a victim to use a session ID the attacker already knows, then waiting for them to authenticate under it.</p>
+        </div>
+        <div class="card">
+          <h4>Cross-Site Scripting (XSS)</h4>
+          <p>Injecting script into a page that, when it runs in another user's browser, can read and exfiltrate their cookies — unless HttpOnly blocks it.</p>
+        </div>
+      </div>
+
+      <p>
+        Protecting cookies — through HttpOnly, Secure, proper expiration, and session regeneration after
+        login — is one of the highest-leverage, lowest-effort wins in web application security. You'll see
+        all four of these attack categories again, in depth, later in the roadmap.
+      </p>
+    </section>
+
+    <!-- ===== 12 LAB ===== -->
+    <section class="phase" id="lab">
+      <div class="phase-head">
+        <span class="phase-num">12</span>
+        <h2>Hands-on lab — DVWA, DevTools &amp; curl</h2>
+      </div>
+      <p class="phase-sub">2–3 hours. Stop reading about HTTP and go watch it happen.</p>
+
+      <ol class="steps">
+        <li><strong>Open DVWA</strong>
+          Start Apache and MySQL if needed, then navigate to:
+          <div class="term">
+            <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">browser address bar</span></div>
+            <pre>http://127.0.0.1/DVWA</pre>
+          </div>
+          Log in with username <code class="inline">admin</code>, password <code class="inline">password</code>.
+        </li>
+
+        <li><strong>Open browser Developer Tools</strong>
+          Press <code class="inline">F12</code>, go to the <strong>Network</strong> tab, clear previous
+          requests, then refresh the page. Watch requests appear in real time as the page loads.
+        </li>
+
+        <li><strong>Inspect an HTTP request</strong>
+          Click any request in the list and observe its Method, URL, Headers, Cookies, and Response tabs.
+          Write down what you find for at least one request — this written observation is part of today's
+          deliverable.
+        </li>
+
+        <li><strong>Explore cookies</strong>
+          Open the <strong>Application</strong> tab (Chrome) or <strong>Storage</strong> tab (Firefox), find
+          Cookies, and identify <code class="inline">PHPSESSID</code>, the DVWA security-level cookie, and
+          any others present.
+        </li>
+
+        <li><strong>Use curl for a head-only request</strong>
+          <div class="term">
+            <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+            <pre><span class="prompt">$</span> curl -I http://127.0.0.1/DVWA
+
+<span class="out">HTTP/1.1 200 OK
+Date: Sat, 27 Jun 2026 10:15:02 GMT
+Server: Apache/2.4.x
+Set-Cookie: PHPSESSID=abc123; path=/
+Content-Type: text/html; charset=UTF-8</span></pre>
+          </div>
+          Observe the HTTP version, status code, <code class="inline">Server</code> header, and
+          <code class="inline">Content-Type</code>.
+        </li>
+
+        <li><strong>Use curl verbose mode for the full exchange</strong>
+          <div class="term">
+            <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+            <pre><span class="prompt">$</span> curl -v http://127.0.0.1/DVWA</pre>
+          </div>
+          <code class="inline">-v</code> shows the complete request <em>and</em> response, including the
+          TCP connection setup — this is the closest the command line gets to what DevTools shows you
+          visually.
+        </li>
+
+        <li><strong>Compare HTTP and HTTPS directly</strong>
+          <div class="term">
+            <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+            <pre><span class="prompt">$</span> curl -I https://google.com
+<span class="prompt">$</span> curl -I http://example.com</pre>
+          </div>
+          Notice that the HTTPS request negotiated TLS before any HTTP data was exchanged — visible if you
+          add <code class="inline">-v</code> to see the TLS handshake lines ahead of the HTTP status line.
+        </li>
+
+        <li><strong>Observe a real login request</strong>
+          Log in to DVWA again with Network tab open. Find the login <code class="inline">POST</code>
+          request and identify its Method, URL, Response Code, and any cookies created in the response
+          (<code class="inline">Set-Cookie</code> header) versus what was sent in the request
+          (<code class="inline">Cookie</code> header).
+        </li>
+      </ol>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ if curl isn't installed</div>
+        <div class="term" style="margin:8px 0 0 0;">
+          <pre style="padding:10px 14px;"><span class="prompt">$</span> sudo apt install curl -y</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 13 DELIVERABLES ===== -->
+    <section class="phase" id="deliverables">
+      <div class="phase-head">
+        <span class="phase-num">13</span>
+        <h2>Required deliverables</h2>
+      </div>
+      <p class="phase-sub">What you must actually produce and commit today — not just read.</p>
+
+      <div class="deliverables">
+        <h4>Required files</h4>
+        <div class="file-item">day14_http_basics.md</div>
+        <div class="file-item">day14_browser_network.png</div>
+        <div class="file-item">day14_cookies.png</div>
+      </div>
+
+      <h3><span class="h3-mark">▤</span> day14_http_basics.md template</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">day14_http_basics.md</span></div>
+        <pre><span class="c"># Day 14 - HTTP, HTTPS, Requests, Responses &amp; Cookies</span>
+
+<span class="c">## What I Learned</span>
+- HTTP allows browsers and servers to communicate.
+- HTTPS encrypts communication using TLS.
+- Requests are sent by clients.
+- Responses are returned by servers.
+- Cookies help websites remember users.
+---
+<span class="c">## HTTP vs HTTPS</span>
+| HTTP | HTTPS |
+|------|-------|
+| Port 80 | Port 443 |
+| Not Encrypted | Encrypted |
+| Less Secure | More Secure |
+---
+<span class="c">## HTTP Methods</span>
+| Method | Purpose |
+|---------|---------|
+| GET | Retrieve data |
+| POST | Submit data |
+| PUT | Update data |
+| DELETE | Remove data |
+---
+<span class="c">## Common Status Codes</span>
+| Code | Meaning |
+|------|----------|
+| 200 | OK |
+| 301 | Redirect |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 500 | Internal Server Error |
+---
+<span class="c">## Browser Analysis</span>
+<span class="c">### Request</span>
+Method:
+URL:
+Headers:
+---
+<span class="c">### Response</span>
+Status Code:
+Important Headers:
+---
+<span class="c">### Cookies Observed</span>
+Cookie Name:
+Purpose:
+---
+<span class="c">## curl Output</span>
+(Paste important output here)
+---
+<span class="c">## Screenshot</span>
+![Browser Network Tab](day14_browser_network.png)
+![Cookies](day14_cookies.png)
+---
+<span class="c">## What I Learned as a Beginner</span>
+- I now understand how browsers communicate with web servers.
+- I can inspect requests, responses, cookies, and headers.
+- This knowledge is essential before learning Burp Suite, SQL Injection,
+  XSS, and session attacks.
+---
+<span class="c">## Challenges Faced</span>
+Example:
+- Understanding headers was confusing at first, but using Developer Tools
+  made it much easier.
+
+**Date:** [Today's Date]</pre>
+      </div>
+
+      <h3><span class="h3-mark">⌥</span> GitHub commit message</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">git</span></div>
+        <pre><span class="prompt">$</span> git add day14_http_basics.md day14_browser_network.png day14_cookies.png
+<span class="prompt">$</span> git commit -m <span class="var">"Day 14: HTTP, HTTPS, requests, responses and cookies fundamentals"</span>
+<span class="prompt">$</span> git push</pre>
+      </div>
+    </section>
+
+    <!-- ===== 14 RESOURCES ===== -->
+    <section class="phase" id="resources">
+      <div class="phase-head">
+        <span class="phase-num">14</span>
+        <h2>Study resources</h2>
+      </div>
+      <p class="phase-sub">Beginner-friendly, in priority order.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Watch</h4>
+          <ul>
+            <li>NetworkChuck — HTTP Explained</li>
+            <li>NetworkChuck — HTTPS Explained</li>
+            <li>John Hammond — HTTP Basics</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Read</h4>
+          <ul>
+            <li>PortSwigger Web Security Academy — HTTP Basics</li>
+            <li>MDN Web Docs — HTTP Overview</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Practice</h4>
+          <ul>
+            <li>TryHackMe — How The Web Works</li>
+            <li>PortSwigger HTTP Labs</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>While studying, take notes on</h4>
+          <ul>
+            <li>Difference between HTTP and HTTPS</li>
+            <li>Request vs Response</li>
+            <li>GET vs POST</li>
+            <li>Cookies vs Sessions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 15 TIPS ===== -->
+    <section class="phase" id="tips">
+      <div class="phase-head">
+        <span class="phase-num">15</span>
+        <h2>Beginner tips &amp; troubleshooting</h2>
+      </div>
+      <p class="phase-sub">What actually trips people up on Day 14, and the daily habit that compounds.</p>
+
+      <details class="trouble" open>
+        <summary>Headers feel overwhelming — there are so many of them</summary>
+        <div class="trouble-body">
+          <p>Don't try to memorize every HTTP header today. Focus on understanding the <em>purpose</em> of
+          requests, responses, cookies, and status codes first — the long tail of specific header names
+          sinks in naturally once you've inspected enough real traffic.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>Not sure where to look in the browser</summary>
+        <div class="trouble-body">
+          <p>Use Developer Tools constantly — they are one of the single most valuable tools in a web
+          security career. Practice inspecting different websites (not just DVWA) to see how requests and
+          responses vary across real-world apps.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>curl: command not found</summary>
+        <div class="trouble-body">
+          <p>Install it: <code class="inline">sudo apt install curl -y</code></p>
+        </div>
+      </details>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ daily practice habit</div>
+        <p>
+          Spend 10–15 minutes each day opening your browser's Network tab on a site you'd visit anyway, and
+          try to identify the HTTP method, response status code, cookies, and important headers without
+          looking anything up. Regular low-effort repetition like this is what makes HTTP feel automatic
+          before you move into Burp Suite, where you'll be reading dozens of these per minute.
+        </p>
+      </div>
+
+      <p>
+        Keep today's notes — they get reused heavily in upcoming lessons on Burp Suite, SQL Injection, XSS,
+        authentication, and session management.
+      </p>
+    </section>
+
+    <!-- ===== 16 CHEAT SHEET ===== -->
+    <section class="phase" id="cheatsheet">
+      <div class="phase-head">
+        <span class="phase-num">16</span>
+        <h2>Cheat-sheet</h2>
+      </div>
+      <p class="phase-sub">The whole day on one screen.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Concept</th><th>Key fact</th></tr></thead>
+          <tbody>
+            <tr><td>HTTP</td><td>Plain text, port 80, no encryption</td></tr>
+            <tr><td>HTTPS</td><td>HTTP + TLS, port 443, encrypted</td></tr>
+            <tr><td>GET</td><td>Retrieve data — parameters visible in URL</td></tr>
+            <tr><td>POST</td><td>Submit data — parameters in body, not URL</td></tr>
+            <tr><td>200 / 3xx / 4xx / 5xx</td><td>Success / redirect / client error / server error</td></tr>
+            <tr><td>Set-Cookie</td><td>Response header that creates a cookie in the browser</td></tr>
+            <tr><td>Cookie</td><td>Request header that sends stored cookies back to the server</td></tr>
+            <tr><td>HttpOnly</td><td>Cookie flag blocking JavaScript access — mitigates XSS cookie theft</td></tr>
+            <tr><td>Secure</td><td>Cookie flag restricting transmission to HTTPS only</td></tr>
+            <tr><td><code class="inline">curl -I</code></td><td>Headers only, no body — quick status/header check</td></tr>
+            <tr><td><code class="inline">curl -v</code></td><td>Full verbose request + response, including connection setup</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== 17 NEXT STEPS ===== -->
+    <section class="phase" id="nextsteps" style="border-bottom:none;">
+      <div class="phase-head">
+        <span class="phase-num">17</span>
+        <h2>Next steps</h2>
+      </div>
+      <p class="phase-sub">Where Day 14 plugs into the rest of the roadmap.</p>
+
+      <p>
+        Every web security assessment begins with understanding HTTP traffic. Security professionals analyze
+        requests, responses, cookies, headers, and authentication tokens to investigate attacks, identify
+        vulnerabilities, and verify security controls — what you practiced today with raw DevTools and curl
+        is the manual version of what a proxy tool automates at scale.
+      </p>
+      <p>
+        <strong>Day 15</strong> moves into <strong>Burp Suite</strong>, the industry-standard tool for
+        intercepting and modifying HTTP traffic in real time — everything you just learned to read manually,
+        you'll soon be able to capture, pause, and rewrite before it ever reaches the server.
+      </p>
+    </section>
+
+    <footer>
+      <span>Day 14 / 120-day cybersecurity learning roadmap</span>
+      <span>HTTP/1.1 · DVWA · curl · Browser DevTools</span>
+    </footer>
+
+  </main>
+</div>
+
+</body>
+</html>
