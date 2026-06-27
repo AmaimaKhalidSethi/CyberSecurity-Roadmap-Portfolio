@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 13 — Security Assessment Fundamentals &amp; Web Tech Intro</title>
+<style>
+:root{
+  --bg:#0a0f0f;
+  --bg-panel:#0f1716;
+  --bg-panel-raised:#131e1d;
+  --line:#1f2e2c;
+  --line-soft:#16201f;
+  --petrol:#1f8a8a;
+  --petrol-bright:#3fd1c7;
+  --amber:#e8a33d;
+  --text:#cfe3e0;
+  --text-dim:#7c9794;
+  --text-faint:#4c6361;
+  --crit:#d4453a;
+  --high:#e8743d;
+  --med:#e8c23d;
+  --low:#4ea0e0;
+  --log:#5fb88f;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -5%, rgba(31,138,138,0.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(63,209,199,0.05), transparent 55%);
+  color:var(--text); font-family:var(--sans); font-size:15.5px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--petrol-bright); text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--petrol-bright); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+
+.shell{display:grid; grid-template-columns: 260px 1fr; max-width:1320px; margin:0 auto;}
+@media (max-width: 900px){
+  .shell{grid-template-columns: 1fr;}
+  .rail{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+}
+
+.rail{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:28px 18px 40px 28px; border-right:1px solid var(--line);}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.rail-brand{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--text-faint); text-transform:uppercase; margin-bottom:4px;}
+.rail-title{font-family:var(--sans); font-weight:700; font-size:18px; color:var(--text); margin:0 0 26px 0; letter-spacing:-0.01em;}
+.rail-title span{color:var(--petrol-bright);}
+.rail nav{display:flex; flex-direction:column; gap:2px;}
+.rail nav a{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); padding:7px 10px; border-radius:5px; display:flex; gap:9px; align-items:baseline;}
+.rail nav a:hover{background:var(--bg-panel-raised); color:var(--petrol-bright); text-decoration:none;}
+.rail nav a .n{color:var(--text-faint); min-width:20px;}
+.rail-meta{margin-top:30px; padding-top:18px; border-top:1px solid var(--line-soft); font-family:var(--mono); font-size:11px; color:var(--text-faint); line-height:1.8;}
+.rail-meta b{color:var(--text-dim); font-weight:600;}
+
+main{padding:0 0 80px 0; min-width:0;}
+
+.hero{padding:64px 56px 40px 56px; border-bottom:1px solid var(--line); position:relative;}
+.hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--petrol-bright); display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+.hero-eyebrow::before{content:""; width:8px;height:8px; border-radius:50%; background:var(--log); box-shadow:0 0 0 3px rgba(95,184,143,0.18);}
+.hero h1{font-size:clamp(28px, 4vw, 42px); line-height:1.1; margin:0 0 16px 0; letter-spacing:-0.02em; font-weight:800; max-width:760px;}
+.hero h1 .accent{color:var(--petrol-bright);}
+.hero p.lede{max-width:640px; color:var(--text-dim); font-size:16px; margin:0 0 28px 0;}
+.hero-tags{display:flex; flex-wrap:wrap; gap:8px;}
+.tag{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:5px; color:var(--text-dim); background:var(--bg-panel);}
+
+.flow-strip{display:flex; align-items:center; gap:0; margin-top:36px; padding:18px 0 4px 0; overflow-x:auto;}
+.flow-node{font-family:var(--mono); font-size:12px; color:var(--text); background:var(--bg-panel); border:1px solid var(--line); border-radius:6px; padding:9px 13px; white-space:nowrap; flex-shrink:0;}
+.flow-node b{color:var(--petrol-bright); display:block; font-size:10px; letter-spacing:0.08em; margin-bottom:3px; text-transform:uppercase; font-weight:600;}
+.flow-arrow{color:var(--text-faint); padding:0 10px; font-size:14px; flex-shrink:0;}
+
+section.phase{padding:48px 56px; border-bottom:1px solid var(--line); scroll-margin-top:20px;}
+section.phase:nth-of-type(odd){background:linear-gradient(180deg, rgba(31,138,138,0.025), transparent 200px);}
+.phase-head{display:flex; align-items:baseline; gap:18px; margin-bottom:8px;}
+.phase-num{font-family:var(--mono); font-size:13px; color:var(--petrol-bright); border:1px solid var(--petrol); border-radius:5px; padding:3px 9px; flex-shrink:0;}
+.phase-head h2{font-size:24px; margin:0; font-weight:750; letter-spacing:-0.01em;}
+.phase-sub{color:var(--text-dim); font-size:14.5px; margin:0 0 28px 0; max-width:680px;}
+
+h3{font-size:16.5px; font-weight:700; margin:32px 0 12px 0; color:var(--text); display:flex; align-items:center; gap:9px;}
+h3 .h3-mark{color:var(--petrol-bright); font-family:var(--mono); font-size:13px;}
+h3:first-of-type{margin-top:8px;}
+
+p{max-width:760px; margin:0 0 14px 0;}
+ul, ol{max-width:760px; padding-left:22px; margin:0 0 16px 0;}
+li{margin-bottom:7px;}
+strong{color:var(--text); font-weight:650;}
+code.inline{font-family:var(--mono); background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:4px; padding:1.5px 6px; font-size:0.88em; color:var(--petrol-bright);}
+
+.term{background:#070b0a; border:1px solid var(--line); border-radius:9px; margin:16px 0 24px 0; max-width:820px; overflow:hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgba(0,0,0,0.6);}
+.term-bar{display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--bg-panel); border-bottom:1px solid var(--line);}
+.term-dot{width:9px; height:9px; border-radius:50%;}
+.term-dot.r{background:#d4453a;}
+.term-dot.y{background:#e8c23d;}
+.term-dot.g{background:#5fb88f;}
+.term-label{font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-left:8px;}
+.term pre{margin:0; padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:#d6ebe7;}
+.term pre::-webkit-scrollbar{height:6px;}
+.term pre::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.term .c{color:var(--text-faint); font-style:italic;}
+.term .out{color:var(--log);}
+.term .prompt{color:var(--petrol-bright);}
+.term .var{color:var(--amber);}
+.term .hdr{color:#8fb8e0;}
+
+.callout{border-radius:8px; border:1px solid var(--line); padding:14px 18px; margin:18px 0 22px 0; max-width:760px; font-size:14px;}
+.callout-head{font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
+.callout.note{background:rgba(31,138,138,0.07); border-color:rgba(31,138,138,0.35);}
+.callout.note .callout-head{color:var(--petrol-bright);}
+.callout.warn{background:rgba(232,116,61,0.07); border-color:rgba(232,116,61,0.35);}
+.callout.warn .callout-head{color:var(--high);}
+.callout.danger{background:rgba(212,69,58,0.08); border-color:rgba(212,69,58,0.4);}
+.callout.danger .callout-head{color:var(--crit);}
+.callout.tip{background:rgba(95,184,143,0.07); border-color:rgba(95,184,143,0.35);}
+.callout.tip .callout-head{color:var(--log);}
+.callout p:last-child{margin-bottom:0;}
+
+/* gem resource block — the single best link per section */
+.gem{
+  border:1px solid rgba(232,163,61,0.4);
+  background:rgba(232,163,61,0.06);
+  border-radius:8px;
+  padding:14px 18px;
+  margin:18px 0 24px 0;
+  max-width:760px;
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+.gem-icon{
+  flex-shrink:0;
+  width:30px; height:30px;
+  border-radius:7px;
+  background:rgba(232,163,61,0.15);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+  margin-top:1px;
+}
+.gem-body{flex:1; min-width:0;}
+.gem-label{font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber); font-weight:700; margin-bottom:4px;}
+.gem-title{font-weight:650; color:var(--text); font-size:14.5px; margin-bottom:3px;}
+.gem-why{font-size:13px; color:var(--text-dim); margin:0;}
+.gem a.gem-link{font-family:var(--mono); font-size:12.5px; display:inline-flex; align-items:center; gap:5px; margin-top:6px;}
+
+.table-wrap{overflow-x:auto; margin:16px 0 24px 0; max-width:900px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; padding:10px 14px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:11px 14px; border-bottom:1px solid var(--line-soft); color:var(--text-dim); vertical-align:top;}
+td code.inline{white-space:nowrap;}
+tr:hover td{background:rgba(31,138,138,0.04);}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:900px; margin:18px 0 24px 0;}
+@media (max-width:760px){.grid2{grid-template-columns:1fr;}}
+.card{background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px;}
+.card h4{margin:0 0 8px 0; font-size:14px; color:var(--petrol-bright); font-family:var(--mono);}
+.card p{margin:0; font-size:13.5px; color:var(--text-dim);}
+.card ul{margin:8px 0 0 0; padding-left:18px; font-size:13.5px; color:var(--text-dim);}
+.card li{margin-bottom:4px;}
+
+.checklist{list-style:none; padding:0; max-width:760px;}
+.checklist li{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line-soft);}
+.checklist li:last-child{border-bottom:none;}
+.checklist .box{flex-shrink:0; width:16px; height:16px; border:1.5px solid var(--petrol); border-radius:3px; margin-top:2px;}
+
+.steps{list-style:none; padding:0; max-width:780px; counter-reset:step;}
+.steps > li{counter-increment:step; position:relative; padding-left:38px; margin-bottom:22px;}
+.steps > li::before{content:counter(step); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:6px; background:var(--bg-panel-raised); border:1px solid var(--petrol); color:var(--petrol-bright); font-family:var(--mono); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+.steps > li > strong{display:block; margin-bottom:4px; color:var(--text); font-size:14.5px;}
+
+details.trouble{border:1px solid var(--line); border-radius:7px; margin-bottom:10px; max-width:820px; background:var(--bg-panel); overflow:hidden;}
+details.trouble summary{padding:13px 16px; cursor:pointer; font-family:var(--mono); font-size:13px; color:var(--text); list-style:none; display:flex; align-items:center; gap:10px;}
+details.trouble summary::-webkit-details-marker{display:none;}
+details.trouble summary::before{content:"▸"; color:var(--petrol-bright); transition:transform 0.15s ease; flex-shrink:0;}
+details.trouble[open] summary::before{transform:rotate(90deg);}
+details.trouble .trouble-body{padding:0 16px 16px 16px; border-top:1px solid var(--line-soft); font-size:13.5px; color:var(--text-dim);}
+details.trouble .trouble-body p:first-child{margin-top:14px;}
+
+.header-row{display:grid; grid-template-columns:200px 1fr; gap:14px; align-items:flex-start; padding:13px 16px; border:1px solid var(--line); border-radius:7px; margin-bottom:8px; max-width:840px; background:var(--bg-panel);}
+@media (max-width:640px){.header-row{grid-template-columns:1fr;}}
+.header-name{font-family:var(--mono); font-weight:700; color:var(--petrol-bright); font-size:13px;}
+.header-desc{font-size:13px; color:var(--text-dim);}
+
+.deliverables{background:var(--bg-panel); border:1px solid var(--line); border-radius:9px; padding:22px 24px; max-width:760px; margin:18px 0 26px 0;}
+.deliverables h4{margin:0 0 12px 0; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--petrol-bright);}
+.deliverables .file-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-family:var(--mono); font-size:13px; color:var(--text);}
+.deliverables .file-item::before{content:"📄"; font-size:13px; filter:grayscale(1) brightness(1.4);}
+
+footer{padding:40px 56px; font-family:var(--mono); font-size:11.5px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+@media (max-width:900px){
+  .hero{padding:40px 24px 32px;}
+  section.phase{padding:36px 24px;}
+  footer{padding:30px 24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="rail">
+    <div class="rail-brand">120-day cybersecurity roadmap // web security module</div>
+    <p class="rail-title">Day <span>13</span> — Assessment Fundamentals</p>
+    <nav>
+      <a href="#overview"><span class="n">00</span> Overview &amp; why this comes first</a>
+      <a href="#assessments"><span class="n">01</span> The four assessment types</a>
+      <a href="#nesting"><span class="n">02</span> How they actually relate</a>
+      <a href="#frontback"><span class="n">03</span> Frontend vs backend attack surface</a>
+      <a href="#headers"><span class="n">04</span> Why headers matter</a>
+      <a href="#owasp"><span class="n">05</span> Where the OWASP Top 10 fits</a>
+      <a href="#methodology"><span class="n">06</span> Passive vs active recon</a>
+      <a href="#task1"><span class="n">07</span> Task 1 — header enumeration with curl</a>
+      <a href="#task2"><span class="n">08</span> Task 2 — passive footprinting</a>
+      <a href="#devtools"><span class="n">09</span> DevTools cheat sheet, properly explained</a>
+      <a href="#deliverables"><span class="n">10</span> Deliverables</a>
+      <a href="#tips"><span class="n">11</span> Beginner tips</a>
+      <a href="#nextsteps"><span class="n">12</span> Next steps</a>
+    </nav>
+    <div class="rail-meta">
+      <div><b>Tools:</b> curl, Browser DevTools, Wappalyzer/BuiltWith</div>
+      <div><b>Est. time:</b> 2–3 hrs</div>
+      <div><b>Leads into:</b> Day 14 — HTTP &amp; Cookies</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <div class="hero-eyebrow">day 13 · web security foundations</div>
+      <h1>Security Assessment Fundamentals &amp; <span class="accent">Web Tech</span> Intro</h1>
+      <p class="lede">
+        Before you scan, intercept, or exploit anything, you need to know what kind of assessment you're
+        actually running — and what's really sitting behind the page your browser renders. This is the
+        recon-and-framing day that makes every later tool make sense.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">assessment types</span>
+        <span class="tag">frontend vs backend</span>
+        <span class="tag">security headers</span>
+        <span class="tag">passive recon</span>
+        <span class="tag">curl + DevTools</span>
+        <span class="tag">OWASP Top 10</span>
+      </div>
+
+      <div class="flow-strip">
+        <div class="flow-node"><b>01 · frame</b>Pick the right assessment type</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>02 · map</b>Identify frontend / backend surface</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>03 · passive</b>Headers, tech-stack fingerprinting</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>04 · inspect</b>DevTools — DOM, network, console</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>05 · next</b>Day 14: read the traffic in depth</div>
+      </div>
+    </div>
+
+    <!-- 00 OVERVIEW -->
+    <section class="phase" id="overview">
+      <div class="phase-head">
+        <span class="phase-num">00</span>
+        <h2>Overview &amp; why this comes first</h2>
+      </div>
+      <p class="phase-sub">Tools without framing produce noise. Framing without tools produces nothing. Day 13 is the framing.</p>
+
+      <p>
+        It's tempting to skip straight to "fun" tools — Nmap, Burp, Metasploit — but every one of those tools
+        answers a question, and you can't ask a good question without knowing what kind of assessment you're
+        doing and what you're actually looking at. A vulnerability scan and a penetration test point the same
+        tools at the same target and produce completely different deliverables, because the <em>goal</em>
+        differs. Today fixes that framing problem before Day 14 gets you reading raw HTTP traffic and Day 15
+        gets you intercepting it with Burp Suite.
+      </p>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ the one-sentence version</div>
+        <p>
+          Day 13 answers <strong>"what am I trying to find out, and where would it actually live in this
+          application?"</strong> — everything from Day 14 onward answers <strong>"how do I go get it?"</strong>
+        </p>
+      </div>
+    </section>
+
+    <!-- 01 ASSESSMENT TYPES -->
+    <section class="phase" id="assessments">
+      <div class="phase-head">
+        <span class="phase-num">01</span>
+        <h2>The four assessment types</h2>
+      </div>
+      <p class="phase-sub">Same target, four different jobs. Knowing which one you're hired (or assigned) to do changes everything about your approach.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Assessment Type</th><th>Primary scope &amp; goal</th><th>Typical output</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Vulnerability Assessment</strong></td>
+              <td>Identify and list known security flaws — automated, surface-layer, breadth over depth.</td>
+              <td>A scored list of findings (e.g. a GVM/OpenVAS report) — see Day 11.</td>
+            </tr>
+            <tr>
+              <td><strong>Penetration Testing</strong></td>
+              <td>Actively exploit vulnerabilities to verify real-world risk and depth of access — manual + automated, depth over breadth.</td>
+              <td>A narrative report showing what was actually achievable, with proof of exploitation.</td>
+            </tr>
+            <tr>
+              <td><strong>Security Auditing</strong></td>
+              <td>Check adherence to a specific regulatory framework or internal control set (PCI-DSS, ISO 27001, SOC 2, internal policy).</td>
+              <td>A compliance checklist — pass/fail against named controls, not a vulnerability list.</td>
+            </tr>
+            <tr>
+              <td><strong>Risk Assessment</strong></td>
+              <td>Analyze systemic threats against business assets and calculate overall business impact — likelihood × impact, not just technical severity.</td>
+              <td>A risk register, often feeding into business/budget decisions rather than a patch list.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ the mistake almost everyone makes early on</div>
+        <p>
+          Calling a vulnerability scan a "penetration test." A scanner like OpenVAS tells you a service
+          <em>might</em> be vulnerable based on version-matching against known CVEs — it has not actually
+          tried to break in. A real pentest takes that list and attempts exploitation to confirm the
+          vulnerability is genuinely reachable and exploitable in this specific environment, not just
+          theoretically present. Conflating the two is one of the fastest ways to lose credibility with a
+          client or a hiring manager who actually knows the difference.
+        </p>
+      </div>
+    </section>
+
+    <!-- 02 HOW THEY RELATE -->
+    <section class="phase" id="nesting">
+      <div class="phase-head">
+        <span class="phase-num">02</span>
+        <h2>How they actually relate to each other</h2>
+      </div>
+      <p class="phase-sub">These aren't four competing options — they're frequently stages of the same larger engagement.</p>
+
+      <p>
+        In practice, a full security program often runs all four in a loose sequence, at different
+        cadences:
+      </p>
+      <ol class="steps">
+        <li><strong>Risk Assessment sets the priorities</strong>
+          Which assets matter most to the business, and what's the acceptable risk tolerance? This usually
+          happens at a program level, annually or per major project — not per-target.
+        </li>
+        <li><strong>Vulnerability Assessments run continuously or on a schedule</strong>
+          Cheap, automatable, broad coverage (this is exactly what your Day 11 OpenVAS lab produces) — the
+          ongoing "what's currently exposed" signal.
+        </li>
+        <li><strong>Penetration Testing happens periodically, targeted</strong>
+          Take the highest-value findings from vulnerability assessments (or a fresh black-box engagement)
+          and verify real-world exploitability — typically annual, or after major changes.
+        </li>
+        <li><strong>Security Auditing runs against whatever regulatory clock applies</strong>
+          Independent of the above — a compliance audit checks documented controls and processes exist and
+          are followed, which can pass even on a system riddled with unpatched CVEs if those CVEs aren't
+          covered by the specific control framework being audited (and vice versa).
+        </li>
+      </ol>
+
+      <div class="callout note">
+        <div class="callout-head">▸ why this matters for your career path</div>
+        <p>
+          SOC Analysts and Vulnerability Management roles live mostly in step 2. Penetration Testers and Red
+          Teamers live in step 3. GRC (Governance, Risk &amp; Compliance) roles live in steps 1 and 4. Knowing
+          this map early helps you read job postings accurately — "pentester" and "vulnerability analyst" are
+          not interchangeable titles even though outsiders often conflate them.
+        </p>
+      </div>
+    </section>
+
+    <!-- 03 FRONTEND VS BACKEND -->
+    <section class="phase" id="frontback">
+      <div class="phase-head">
+        <span class="phase-num">03</span>
+        <h2>Frontend vs backend attack surface</h2>
+      </div>
+      <p class="phase-sub">Not just "what runs where" — what that location implies about who can tamper with it.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Frontend — client-side</h4>
+          <p>HTML, CSS, and JavaScript that ships to and runs inside the user's own browser — fully visible
+          and editable via DevTools. <strong>Anything enforced only in frontend code is not actually
+          enforced</strong> — a user (or attacker) controls their own browser completely and can disable,
+          rewrite, or bypass any client-side check.</p>
+          <ul>
+            <li>Form validation that only checks in JS — trivially bypassed by sending the request directly</li>
+            <li>"Hidden" form fields and disabled buttons — visible and editable in the DOM</li>
+            <li>Client-side route guards (e.g. a React router redirect) — irrelevant if the underlying API has no server-side check</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Backend — server-side</h4>
+          <p>Server-side processing logic (Node.js, Python, PHP, Java, etc.) handling databases (SQL/NoSQL),
+          business logic, and authentication — hidden behind the HTTP boundary. This is where
+          <strong>real</strong> enforcement has to live, because the client cannot tamper with code it never
+          receives.</p>
+          <ul>
+            <li>Authentication and authorization checks</li>
+            <li>Input validation and sanitization before it ever touches a database query</li>
+            <li>Business rules (pricing, permissions, rate limits)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ the single most important takeaway from this section</div>
+        <p>
+          <strong>"Security through obscurity" on the frontend is not security.</strong> If a check, a price
+          calculation, or an access decision happens only in JavaScript that ships to the browser, treat it
+          as already broken — the only question is how the attacker reaches the unprotected backend
+          endpoint directly. This is the conceptual root of an enormous fraction of real-world web
+          vulnerabilities, including most broken access control and IDOR (Insecure Direct Object Reference)
+          findings you'll study later.
+        </p>
+      </div>
+    </section>
+
+    <!-- 04 HEADERS -->
+    <section class="phase" id="headers">
+      <div class="phase-head">
+        <span class="phase-num">04</span>
+        <h2>Why headers matter</h2>
+      </div>
+      <p class="phase-sub">HTTP response headers are a free intelligence leak in one direction, and a free defense layer in the other — and most apps get both halves wrong.</p>
+
+      <p>
+        Response headers reveal server software, technology stacks, and — critically — whether the
+        defensive headers that should be there actually are. Here's the working set worth knowing by name:
+      </p>
+
+      <div class="header-row">
+        <span class="header-name">X-Powered-By</span>
+        <span class="header-desc">Directly announces the backend framework (e.g. <code class="inline">Express</code>, <code class="inline">PHP/8.1</code>) — pure reconnaissance gift to an attacker, no defensive value. Best practice: disable it entirely.</span>
+      </div>
+      <div class="header-row">
+        <span class="header-name">Server</span>
+        <span class="header-desc">Announces the web server software and often its exact version (e.g. <code class="inline">Apache/2.4.52</code>) — lets an attacker go straight to a CVE database for that exact build.</span>
+      </div>
+      <div class="header-row">
+        <span class="header-name">Content-Security-Policy</span>
+        <span class="header-desc">Restricts what sources scripts, styles, and frames can load from — the single strongest defense against XSS payload execution even if injection occurs.</span>
+      </div>
+      <div class="header-row">
+        <span class="header-name">Strict-Transport-Security</span>
+        <span class="header-desc">Forces the browser to only ever connect over HTTPS for this domain going forward — closes the window for downgrade/strip attacks on subsequent visits.</span>
+      </div>
+      <div class="header-row">
+        <span class="header-name">X-Content-Type-Options</span>
+        <span class="header-desc"><code class="inline">nosniff</code> — stops the browser from guessing content types in a way that can turn an uploaded "image" into executable script in some legacy scenarios.</span>
+      </div>
+      <div class="header-row">
+        <span class="header-name">X-Frame-Options</span>
+        <span class="header-desc">Controls whether the page can be embedded in an <code class="inline">&lt;iframe&gt;</code> elsewhere — its absence is a prerequisite for clickjacking attacks.</span>
+      </div>
+
+      <div class="callout note">
+        <div class="callout-head">▸ reading headers is a two-sided exercise</div>
+        <p>
+          You're checking for two different things at once: headers that are <strong>present and shouldn't
+          be</strong> (information disclosure — <code class="inline">X-Powered-By</code>,
+          <code class="inline">Server</code> with version strings) and headers that are
+          <strong>absent and should be present</strong> (missing defenses —
+          <code class="inline">CSP</code>, <code class="inline">HSTS</code>). A clean-looking response with
+          no banners can still be missing every defensive header; both checks matter independently.
+        </p>
+      </div>
+
+      <div class="gem">
+        <div class="gem-icon">▶</div>
+        <div class="gem-body">
+          <div class="gem-label">gem resource — security headers, hands-on</div>
+          <div class="gem-title">PortSwigger — "HTTP Security Headers" (Web Security Academy)</div>
+          <p class="gem-why">
+            Free, interactive labs that let you actually toggle CSP/HSTS/X-Frame-Options on a live target and
+            watch the attack succeed or fail in real time — far more durable learning than reading a header
+            list, and it's the same academy you'll lean on heavily from Day 15 onward with Burp Suite.
+          </p>
+          <a class="gem-link" href="https://portswigger.net/web-security/cross-site-scripting/contexts" target="_blank" rel="noopener">portswigger.net/web-security ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 OWASP -->
+    <section class="phase" id="owasp">
+      <div class="phase-head">
+        <span class="phase-num">05</span>
+        <h2>Where the OWASP Top 10 fits</h2>
+      </div>
+      <p class="phase-sub">The source doc didn't mention it, but you'll see it referenced constantly from here on — worth anchoring now.</p>
+
+      <p>
+        The OWASP Top 10 is a regularly-updated, community-curated list of the most critical web application
+        security risks, maintained by the Open Worldwide Application Security Project. It's not a checklist
+        of specific bugs — it's a list of <em>categories</em> of risk (e.g. "Broken Access Control,"
+        "Injection," "Security Misconfiguration") that almost every assessment type from Phase 01 ends up
+        organizing its findings around, because clients, auditors, and other security teams all share this
+        common vocabulary.
+      </p>
+
+      <ul>
+        <li>A <strong>vulnerability assessment</strong> finding often maps directly to an OWASP category (e.g. a missing CSP header → "Security Misconfiguration").</li>
+        <li>A <strong>penetration test report</strong> typically structures its executive summary around which OWASP categories were confirmed exploitable.</li>
+        <li>A <strong>security audit</strong> against a framework like PCI-DSS will frequently cross-reference OWASP categories as evidence of secure coding practice.</li>
+      </ul>
+
+      <div class="gem">
+        <div class="gem-icon">▶</div>
+        <div class="gem-body">
+          <div class="gem-label">gem resource — the canonical reference</div>
+          <div class="gem-title">OWASP Top 10 — official project page (owasp.org)</div>
+          <p class="gem-why">
+            Go to the primary source, not a summary blog — it's free, regularly updated, and every later
+            module in this roadmap (SQLi, XSS, CSRF, broken auth) is one of these ten categories in detail.
+            Skim it today just to recognize the names; you'll return to each one individually later.
+          </p>
+          <a class="gem-link" href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener">owasp.org/www-project-top-ten ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 METHODOLOGY -->
+    <section class="phase" id="methodology">
+      <div class="phase-head">
+        <span class="phase-num">06</span>
+        <h2>Passive vs active recon</h2>
+      </div>
+      <p class="phase-sub">A distinction the source material uses implicitly (Task 1 vs Task 2) but never names — naming it now will save confusion in every later recon-heavy day.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Passive recon</h4>
+          <p>Gathering information <strong>without sending traffic the target would notice as unusual</strong> —
+          or sometimes without touching the target at all. Browsing cached pages, reading public DNS
+          records, checking certificate transparency logs, using third-party fingerprinting services like
+          Wappalyzer/BuiltWith that analyze a page you load normally.</p>
+        </div>
+        <div class="card">
+          <h4>Active recon</h4>
+          <p>Directly interacting with the target in a way that generates logs, touches the server, and
+          could theoretically be detected — a <code class="inline">curl</code> request, a port scan, a
+          directory brute-force. Still non-destructive at this stage, but no longer invisible.</p>
+        </div>
+      </div>
+
+      <p>
+        Task 1 below (<code class="inline">curl -I</code>) is technically active — it's a real request hitting
+        the real server. Task 2 (Wappalyzer/BuiltWith) is passive — you're just analyzing a page you'd load
+        anyway. In a real engagement with defined scope and rules of engagement, this distinction determines
+        what you're allowed to do before formal authorization kicks in versus what requires it.
+      </p>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ scope reminder</div>
+        <p>
+          Every command in this guide should be run against <code class="inline">example.com</code> as
+          written (it's a real, intentionally-public IANA test domain meant for exactly this), or against
+          infrastructure you own or have explicit written authorization to test. Don't repoint these at
+          targets you don't control.
+        </p>
+      </div>
+    </section>
+
+    <!-- 07 TASK 1 -->
+    <section class="phase" id="task1">
+      <div class="phase-head">
+        <span class="phase-num">07</span>
+        <h2>Task 1 — active header enumeration via curl</h2>
+      </div>
+      <p class="phase-sub">A single quiet request, read carefully.</p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="prompt">$</span> curl -I https://example.com
+
+<span class="out">HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 1256
+Date: Sat, 27 Jun 2026 10:02:11 GMT
+Cache-Control: max-age=604800
+Server: ECAcc (dcd/7D5A)
+X-Cache: HIT
+Vary: Accept-Encoding</span></pre>
+      </div>
+
+      <p>Walking through what to actually check, line by line:</p>
+      <ol class="steps">
+        <li><strong>Status line</strong>
+          Confirms the server responded and how — a 200 here, but watch for 403/redirect chains on real
+          targets, which can themselves reveal WAF or auth-gate presence.
+        </li>
+        <li><strong>Server / X-Powered-By presence</strong>
+          example.com's response above is deliberately sparse — most production targets will leak more.
+          Note exactly what's disclosed: software name, version number, OS hints.
+        </li>
+        <li><strong>Missing security headers</strong>
+          Notice there's no <code class="inline">Content-Security-Policy</code>,
+          <code class="inline">Strict-Transport-Security</code>, or
+          <code class="inline">X-Frame-Options</code> in this response — exactly the "absent and should be
+          present" check from Phase 04.
+        </li>
+        <li><strong>Caching headers</strong>
+          <code class="inline">Cache-Control</code> and <code class="inline">X-Cache</code> reveal CDN/proxy
+          presence — useful context for understanding the actual infrastructure in front of the origin
+          server.
+        </li>
+      </ol>
+
+      <div class="callout note">
+        <div class="callout-head">▸ leveling this up</div>
+        <p>
+          Add <code class="inline">-v</code> instead of <code class="inline">-I</code> to also see the TLS
+          handshake details (negotiated protocol version, cipher suite) — relevant once you start checking
+          targets for deprecated TLS 1.0/1.1 support, a finding that shows up constantly in real
+          vulnerability assessments.
+        </p>
+      </div>
+
+      <p>
+        The point of this task, tied back to Phase 01: a <strong>verbose server banner with an outdated
+        version string</strong> is exactly the kind of finding that feeds a Day-11-style vulnerability scan
+        or a Day-12 exploit-database lookup — header enumeration is the manual, single-target version of
+        what an automated scanner does across an entire range.
+      </p>
+    </section>
+
+    <!-- 08 TASK 2 -->
+    <section class="phase" id="task2">
+      <div class="phase-head">
+        <span class="phase-num">08</span>
+        <h2>Task 2 — passive footprinting via browser extension</h2>
+      </div>
+      <p class="phase-sub">Let someone else's fingerprinting database do the version-matching for you.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Wappalyzer</h4>
+          <p>Browser extension that analyzes a loaded page's HTML, JS globals, cookies, and headers against
+          a large signature database to identify CMS platforms, JS frameworks, analytics tools, and server
+          technologies — all without sending a single extra request to the target.</p>
+        </div>
+        <div class="card">
+          <h4>BuiltWith</h4>
+          <p>Similar fingerprinting, with a stronger emphasis on infrastructure-level detail: CDN providers,
+          hosting providers, embedded third-party APIs, and advertising/analytics integrations — useful for
+          mapping an organization's broader technology footprint, not just the single page in front of you.</p>
+        </div>
+      </div>
+
+      <ol class="steps">
+        <li><strong>Install the Wappalyzer extension</strong> in your browser and navigate to a target
+        you're authorized to assess.</li>
+        <li><strong>Click the extension icon</strong> — it surfaces a categorized list (CMS, JS framework,
+        web server, analytics, etc.) instantly, with no action on your part beyond loading the page.</li>
+        <li><strong>Cross-reference against Task 1's curl output</strong> — does the
+        <code class="inline">Server</code> header agree with what Wappalyzer detected? Discrepancies are
+        worth investigating; they sometimes indicate a reverse proxy or CDN masking the true origin stack.</li>
+        <li><strong>Repeat with BuiltWith</strong> for the infrastructure-level view — CDN, hosting provider,
+        DNS provider — building a fuller picture of the target's technology supply chain.</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ why "free" tools like this matter professionally</div>
+        <p>
+          Passive fingerprinting tools are exactly what a real-world attacker (or a bug bounty hunter doing
+          initial recon under a tight scope) reaches for first — they're zero-risk, zero-noise, and often
+          reveal outdated or unusual technology choices that narrow your next steps dramatically before you
+          send a single active probe.
+        </p>
+      </div>
+
+      <div class="gem">
+        <div class="gem-icon">▶</div>
+        <div class="gem-body">
+          <div class="gem-label">gem resource — recon methodology, end to end</div>
+          <div class="gem-title">NetworkChuck — "Reconnaissance" walkthrough (YouTube)</div>
+          <p class="gem-why">
+            Ties passive fingerprinting tools like these into a full beginner-friendly recon methodology with
+            a clear, narrated workflow — the most approachable bridge between "I installed an extension" and
+            "I understand why recon is structured this way" without assuming prior security background.
+          </p>
+          <a class="gem-link" href="https://www.youtube.com/results?search_query=networkchuck+reconnaissance" target="_blank" rel="noopener">youtube.com/@NetworkChuck ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 DEVTOOLS -->
+    <section class="phase" id="devtools">
+      <div class="phase-head">
+        <span class="phase-num">09</span>
+        <h2>DevTools cheat sheet — properly explained</h2>
+      </div>
+      <p class="phase-sub">Not just what each tab is called — what specifically to look for in each one.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Elements tab</h4>
+          <p>Shows the live, rendered DOM — which can differ from the original HTML source after JavaScript
+          has run. Look for:</p>
+          <ul>
+            <li>Hidden input fields (<code class="inline">type="hidden"</code>) carrying IDs, tokens, or flags the UI doesn't surface visually</li>
+            <li>Disabled buttons or inputs — check if disabling is purely a CSS/attribute toggle you can remove client-side</li>
+            <li>Inline event handlers and embedded <code class="inline">&lt;script&gt;</code> blocks revealing internal logic or endpoint names</li>
+            <li>HTML comments occasionally left in by developers containing internal notes or stale debug info</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Network tab</h4>
+          <p>The full record of every request the page makes. Look for:</p>
+          <ul>
+            <li>XHR/fetch calls to API endpoints not visible anywhere in the rendered page — often the real attack surface for SPAs</li>
+            <li>JSON request/response bodies revealing the actual data shape and field names the backend expects</li>
+            <li>Status codes across requests — a stray 403/500 reveals an endpoint behaving unexpectedly under normal use</li>
+            <li>Request headers showing auth tokens, API keys, or session identifiers in transit</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Console tab</h4>
+          <p>Client-side JavaScript execution logs. Look for:</p>
+          <ul>
+            <li>Unhandled errors and stack traces — these frequently leak internal file paths, framework versions, or variable names</li>
+            <li>Developer <code class="inline">console.log()</code> debug statements accidentally left in production</li>
+            <li>The ability to directly execute arbitrary JS in the page's own context — useful later for manually testing DOM-based XSS sinks</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Application / Storage tab</h4>
+          <p>Not in the original list, but essential alongside the other three — shows cookies, localStorage,
+          and sessionStorage. Look for:</p>
+          <ul>
+            <li>Session tokens stored in localStorage (vulnerable to theft via any XSS, unlike HttpOnly cookies — see Day 14)</li>
+            <li>Cookie flags — is <code class="inline">Secure</code> or <code class="inline">HttpOnly</code> actually set?</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout note">
+        <div class="callout-head">▸ the habit that makes this stick</div>
+        <p>
+          Don't just read this list — open DevTools on three sites you use daily right now and find one
+          concrete example of each bullet point above. Recognition speed on real, messy production sites is
+          the actual skill; this cheat sheet is just the index.
+        </p>
+      </div>
+    </section>
+
+    <!-- 10 DELIVERABLES -->
+    <section class="phase" id="deliverables">
+      <div class="phase-head">
+        <span class="phase-num">10</span>
+        <h2>Deliverables</h2>
+      </div>
+      <p class="phase-sub">Produce something, not just read something — matching the portfolio-build pattern from the rest of the roadmap.</p>
+
+      <div class="deliverables">
+        <h4>Suggested files for today</h4>
+        <div class="file-item">day13_assessment_notes.md</div>
+        <div class="file-item">day13_curl_headers.txt</div>
+        <div class="file-item">day13_devtools_findings.png</div>
+      </div>
+
+      <p>In <code class="inline">day13_assessment_notes.md</code>, capture at minimum:</p>
+      <ul class="checklist">
+        <li><span class="box"></span><span>A one-paragraph definition, in your own words, of each of the four assessment types</span></li>
+        <li><span class="box"></span><span>The raw <code class="inline">curl -I</code> output against <code class="inline">example.com</code>, with notes on which security headers were present vs. missing</span></li>
+        <li><span class="box"></span><span>Wappalyzer/BuiltWith results for the same target, with one note on whether they agreed with the curl-derived <code class="inline">Server</code> header</span></li>
+        <li><span class="box"></span><span>One screenshot from DevTools showing a hidden field, a network request, or a console log you found interesting</span></li>
+      </ul>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">git</span></div>
+        <pre><span class="prompt">$</span> git add day13_assessment_notes.md day13_curl_headers.txt day13_devtools_findings.png
+<span class="prompt">$</span> git commit -m <span class="var">"Day 13: security assessment fundamentals and web tech recon"</span>
+<span class="prompt">$</span> git push</pre>
+      </div>
+    </section>
+
+    <!-- 11 TIPS -->
+    <section class="phase" id="tips">
+      <div class="phase-head">
+        <span class="phase-num">11</span>
+        <h2>Beginner tips</h2>
+      </div>
+      <p class="phase-sub">What trips people up specifically on Day 13.</p>
+
+      <details class="trouble" open>
+        <summary>The four assessment types feel like trivia, not a skill</summary>
+        <div class="trouble-body">
+          <p>They click once you read a few real reports. Search for a public sample penetration test report
+          and a public sample vulnerability assessment report side by side (many security firms publish
+          redacted samples) — the structural difference in how findings are framed becomes obvious fast, far
+          more than memorizing the table above.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>Wappalyzer shows nothing, or shows wildly outdated info</summary>
+        <div class="trouble-body">
+          <p>Signature-based fingerprinting can lag behind a site's actual current stack, and some
+          frameworks are deliberately obfuscated against this kind of detection. Treat any single tool's
+          output as a hypothesis to confirm against a second source (the curl headers, page source view,
+          response timing patterns) — not ground truth on its own.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>Not sure which DevTools finding is actually "interesting" vs. just normal</summary>
+        <div class="trouble-body">
+          <p>At this stage, "interesting" just means "I didn't expect this to be visible." A hidden field
+          with a real database ID, an API call with no visible UI trigger, a console error mentioning an
+          internal hostname — none of these are exploits yet, they're just things worth writing down and
+          coming back to once you have the tools (Burp Suite, Day 15 onward) to actually act on them.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- 12 NEXT STEPS -->
+    <section class="phase" id="nextsteps" style="border-bottom:none;">
+      <div class="phase-head">
+        <span class="phase-num">12</span>
+        <h2>Next steps</h2>
+      </div>
+      <p class="phase-sub">Where Day 13's framing gets put to use.</p>
+
+      <p>
+        Day 13 gave you the vocabulary and the map. Day 14 hands you the actual mechanics of the
+        request/response cycle you've been observing today through curl and the Network tab — methods,
+        status codes, headers, and cookies in full depth. Day 15 then hands you Burp Suite, which turns the
+        manual "click a request in DevTools" workflow from today into something you can intercept, pause,
+        and rewrite live, at scale, across an entire application.
+      </p>
+    </section>
+
+    <footer>
+      <span>Day 13 / 120-day cybersecurity learning roadmap</span>
+      <span>curl · Browser DevTools · Wappalyzer · BuiltWith</span>
+    </footer>
+
+  </main>
+</div>
+
+</body>
+</html>
