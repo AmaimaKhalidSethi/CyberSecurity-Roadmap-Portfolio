@@ -1,376 +1,984 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Day 11: NMAP - 120-Day Cybersecurity Learning Roadmap</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #e2e8f0;
-            --accent-color: #38bdf8;
-            --border-color: #334155;
-            --success-color: #4ade80;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --code-bg: #020617;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 11 — Nmap: Network Discovery &amp; Port Scanning In-Depth</title>
+<style>
+:root{
+  --bg:#0a0f0f;
+  --bg-panel:#0f1716;
+  --bg-panel-raised:#131e1d;
+  --line:#1f2e2c;
+  --line-soft:#16201f;
+  --petrol:#1f8a8a;
+  --petrol-bright:#3fd1c7;
+  --amber:#e8a33d;
+  --text:#cfe3e0;
+  --text-dim:#7c9794;
+  --text-faint:#4c6361;
+  --crit:#d4453a;
+  --high:#e8743d;
+  --med:#e8c23d;
+  --low:#4ea0e0;
+  --log:#5fb88f;
+  --open:#5fb88f;
+  --closed:#d4453a;
+  --filtered:#e8c23d;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -5%, rgba(31,138,138,0.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(63,209,199,0.05), transparent 55%);
+  color:var(--text); font-family:var(--sans); font-size:15.5px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--petrol-bright); text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--petrol-bright); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-        }
+.shell{display:grid; grid-template-columns: 260px 1fr; max-width:1320px; margin:0 auto;}
+@media (max-width: 900px){
+  .shell{grid-template-columns: 1fr;}
+  .rail{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+}
 
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-        }
+.rail{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:28px 18px 40px 28px; border-right:1px solid var(--line);}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.rail-brand{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--text-faint); text-transform:uppercase; margin-bottom:4px;}
+.rail-title{font-family:var(--sans); font-weight:700; font-size:18px; color:var(--text); margin:0 0 26px 0; letter-spacing:-0.01em;}
+.rail-title span{color:var(--petrol-bright);}
+.rail nav{display:flex; flex-direction:column; gap:2px;}
+.rail nav a{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); padding:7px 10px; border-radius:5px; display:flex; gap:9px; align-items:baseline;}
+.rail nav a:hover{background:var(--bg-panel-raised); color:var(--petrol-bright); text-decoration:none;}
+.rail nav a .n{color:var(--text-faint); min-width:20px;}
+.rail-meta{margin-top:30px; padding-top:18px; border-top:1px solid var(--line-soft); font-family:var(--mono); font-size:11px; color:var(--text-faint); line-height:1.8;}
+.rail-meta b{color:var(--text-dim); font-weight:600;}
 
-        header {
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
+main{padding:0 0 80px 0; min-width:0;}
 
-        h1 {
-            color: var(--accent-color);
-            margin-top: 0;
-            font-size: 2.5rem;
-        }
+.hero{padding:64px 56px 40px 56px; border-bottom:1px solid var(--line); position:relative;}
+.hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--petrol-bright); display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+.hero-eyebrow::before{content:""; width:8px;height:8px; border-radius:50%; background:var(--log); box-shadow:0 0 0 3px rgba(95,184,143,0.18);}
+.hero h1{font-size:clamp(28px, 4vw, 42px); line-height:1.1; margin:0 0 16px 0; letter-spacing:-0.02em; font-weight:800; max-width:760px;}
+.hero h1 .accent{color:var(--petrol-bright);}
+.hero p.lede{max-width:640px; color:var(--text-dim); font-size:16px; margin:0 0 28px 0;}
+.hero-tags{display:flex; flex-wrap:wrap; gap:8px;}
+.tag{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:5px; color:var(--text-dim); background:var(--bg-panel);}
 
-        h2 {
-            color: var(--accent-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-            margin-top: 35px;
-        }
+.flow-strip{display:flex; align-items:center; gap:0; margin-top:36px; padding:18px 0 4px 0; overflow-x:auto;}
+.flow-node{font-family:var(--mono); font-size:12px; color:var(--text); background:var(--bg-panel); border:1px solid var(--line); border-radius:6px; padding:9px 13px; white-space:nowrap; flex-shrink:0;}
+.flow-node b{color:var(--petrol-bright); display:block; font-size:10px; letter-spacing:0.08em; margin-bottom:3px; text-transform:uppercase; font-weight:600;}
+.flow-arrow{color:var(--text-faint); padding:0 10px; font-size:14px; flex-shrink:0;}
 
-        h3 {
-            color: #94a3b8;
-            margin-top: 20px;
-        }
+section.phase{padding:48px 56px; border-bottom:1px solid var(--line); scroll-margin-top:20px;}
+section.phase:nth-of-type(odd){background:linear-gradient(180deg, rgba(31,138,138,0.025), transparent 200px);}
+.phase-head{display:flex; align-items:baseline; gap:18px; margin-bottom:8px;}
+.phase-num{font-family:var(--mono); font-size:13px; color:var(--petrol-bright); border:1px solid var(--petrol); border-radius:5px; padding:3px 9px; flex-shrink:0;}
+.phase-head h2{font-size:24px; margin:0; font-weight:750; letter-spacing:-0.01em;}
+.phase-sub{color:var(--text-dim); font-size:14.5px; margin:0 0 28px 0; max-width:680px;}
 
-        p, li {
-            color: #cbd5e1;
-        }
+h3{font-size:16.5px; font-weight:700; margin:32px 0 12px 0; color:var(--text); display:flex; align-items:center; gap:9px;}
+h3 .h3-mark{color:var(--petrol-bright); font-family:var(--mono); font-size:13px;}
+h3:first-of-type{margin-top:8px;}
 
-        ul {
-            padding-left: 20px;
-        }
+p{max-width:760px; margin:0 0 14px 0;}
+ul, ol{max-width:760px; padding-left:22px; margin:0 0 16px 0;}
+li{margin-bottom:7px;}
+strong{color:var(--text); font-weight:650;}
+code.inline{font-family:var(--mono); background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:4px; padding:1.5px 6px; font-size:0.88em; color:var(--petrol-bright);}
 
-        li {
-            margin-bottom: 8px;
-        }
+.term{background:#070b0a; border:1px solid var(--line); border-radius:9px; margin:16px 0 24px 0; max-width:820px; overflow:hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgba(0,0,0,0.6);}
+.term-bar{display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--bg-panel); border-bottom:1px solid var(--line);}
+.term-dot{width:9px; height:9px; border-radius:50%;}
+.term-dot.r{background:#d4453a;}
+.term-dot.y{background:#e8c23d;}
+.term-dot.g{background:#5fb88f;}
+.term-label{font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-left:8px;}
+.term pre{margin:0; padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:#d6ebe7;}
+.term pre::-webkit-scrollbar{height:6px;}
+.term pre::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.term .c{color:var(--text-faint); font-style:italic;}
+.term .out{color:var(--log);}
+.term .prompt{color:var(--petrol-bright);}
+.term .var{color:var(--amber);}
+.term .st-open{color:var(--open); font-weight:700;}
+.term .st-closed{color:var(--closed); font-weight:700;}
+.term .st-filtered{color:var(--filtered); font-weight:700;}
 
-        code {
-            background-color: var(--code-bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.9em;
-            color: #f1f5f9;
-        }
+.callout{border-radius:8px; border:1px solid var(--line); padding:14px 18px; margin:18px 0 22px 0; max-width:760px; font-size:14px;}
+.callout-head{font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
+.callout.note{background:rgba(31,138,138,0.07); border-color:rgba(31,138,138,0.35);}
+.callout.note .callout-head{color:var(--petrol-bright);}
+.callout.warn{background:rgba(232,116,61,0.07); border-color:rgba(232,116,61,0.35);}
+.callout.warn .callout-head{color:var(--high);}
+.callout.danger{background:rgba(212,69,58,0.08); border-color:rgba(212,69,58,0.4);}
+.callout.danger .callout-head{color:var(--crit);}
+.callout.tip{background:rgba(95,184,143,0.07); border-color:rgba(95,184,143,0.35);}
+.callout.tip .callout-head{color:var(--log);}
+.callout p:last-child{margin-bottom:0;}
 
-        pre {
-            background-color: var(--code-bg);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-        }
+.gem{border:1px solid rgba(232,163,61,0.4); background:rgba(232,163,61,0.06); border-radius:8px; padding:14px 18px; margin:18px 0 24px 0; max-width:760px; display:flex; gap:14px; align-items:flex-start;}
+.gem-icon{flex-shrink:0; width:30px; height:30px; border-radius:7px; background:rgba(232,163,61,0.15); display:flex; align-items:center; justify-content:center; font-size:15px; margin-top:1px;}
+.gem-body{flex:1; min-width:0;}
+.gem-label{font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber); font-weight:700; margin-bottom:4px;}
+.gem-title{font-weight:650; color:var(--text); font-size:14.5px; margin-bottom:3px;}
+.gem-why{font-size:13px; color:var(--text-dim); margin:0;}
+.gem a.gem-link{font-family:var(--mono); font-size:12.5px; display:inline-flex; align-items:center; gap:5px; margin-top:6px;}
 
-        pre code {
-            background-color: transparent;
-            padding: 0;
-        }
+.table-wrap{overflow-x:auto; margin:16px 0 24px 0; max-width:920px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; padding:10px 14px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:11px 14px; border-bottom:1px solid var(--line-soft); color:var(--text-dim); vertical-align:top;}
+td code.inline{white-space:nowrap;}
+tr:hover td{background:rgba(31,138,138,0.04);}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-        }
+.pill{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; font-weight:700; padding:3px 9px; border-radius:4px; white-space:nowrap;}
+.pill::before{content:""; width:7px; height:7px; border-radius:50%;}
+.pill.high{color:var(--log); background:rgba(95,184,143,0.12);}
+.pill.high::before{background:var(--log);}
+.pill.medium{color:var(--med); background:rgba(232,194,61,0.12);}
+.pill.medium::before{background:var(--med);}
+.pill.low{color:var(--crit); background:rgba(212,69,58,0.12);}
+.pill.low::before{background:var(--crit);}
+.pill.na{color:var(--text-faint); background:rgba(124,151,148,0.12);}
+.pill.na::before{background:var(--text-faint);}
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:900px; margin:18px 0 24px 0;}
+@media (max-width:760px){.grid2{grid-template-columns:1fr;}}
+.card{background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px;}
+.card h4{margin:0 0 8px 0; font-size:14px; color:var(--petrol-bright); font-family:var(--mono);}
+.card p{margin:0; font-size:13.5px; color:var(--text-dim);}
+.card ul{margin:8px 0 0 0; padding-left:18px; font-size:13.5px; color:var(--text-dim);}
+.card li{margin-bottom:4px;}
 
-        th {
-            background-color: #1e293b;
-            color: var(--accent-color);
-            font-weight: 600;
-        }
+.checklist{list-style:none; padding:0; max-width:760px;}
+.checklist li{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line-soft);}
+.checklist li:last-child{border-bottom:none;}
+.checklist .box{flex-shrink:0; width:16px; height:16px; border:1.5px solid var(--petrol); border-radius:3px; margin-top:2px;}
 
-        tr:last-child td {
-            border-bottom: none;
-        }
+.steps{list-style:none; padding:0; max-width:780px; counter-reset:step;}
+.steps > li{counter-increment:step; position:relative; padding-left:38px; margin-bottom:22px;}
+.steps > li::before{content:counter(step); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:6px; background:var(--bg-panel-raised); border:1px solid var(--petrol); color:var(--petrol-bright); font-family:var(--mono); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+.steps > li > strong{display:block; margin-bottom:4px; color:var(--text); font-size:14.5px;}
 
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
+details.trouble{border:1px solid var(--line); border-radius:7px; margin-bottom:10px; max-width:820px; background:var(--bg-panel); overflow:hidden;}
+details.trouble summary{padding:13px 16px; cursor:pointer; font-family:var(--mono); font-size:13px; color:var(--text); list-style:none; display:flex; align-items:center; gap:10px;}
+details.trouble summary::-webkit-details-marker{display:none;}
+details.trouble summary::before{content:"▸"; color:var(--petrol-bright); transition:transform 0.15s ease; flex-shrink:0;}
+details.trouble[open] summary::before{transform:rotate(90deg);}
+details.trouble .trouble-body{padding:0 16px 16px 16px; border-top:1px solid var(--line-soft); font-size:13.5px; color:var(--text-dim);}
+details.trouble .trouble-body p:first-child{margin-top:14px;}
 
-        .alert-danger {
-            border-left: 4px solid var(--danger-color);
-            background-color: #2d161a;
-        }
+.timing-row{display:grid; grid-template-columns:90px 140px 1fr; gap:14px; align-items:center; padding:11px 16px; border:1px solid var(--line); border-radius:7px; margin-bottom:7px; max-width:780px; background:var(--bg-panel); font-size:13px;}
+@media (max-width:640px){.timing-row{grid-template-columns:1fr;}}
+.timing-flag{font-family:var(--mono); font-weight:700; color:var(--petrol-bright);}
+.timing-name{font-family:var(--mono); color:var(--text-dim); font-size:12px;}
+.timing-desc{color:var(--text-dim);}
 
-        .alert-success {
-            border-left: 4px solid var(--success-color);
-            background-color: #142a1e;
-        }
+.deliverables{background:var(--bg-panel); border:1px solid var(--line); border-radius:9px; padding:22px 24px; max-width:760px; margin:18px 0 26px 0;}
+.deliverables h4{margin:0 0 12px 0; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--petrol-bright);}
+.deliverables .file-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-family:var(--mono); font-size:13px; color:var(--text);}
+.deliverables .file-item::before{content:"📄"; font-size:13px; filter:grayscale(1) brightness(1.4);}
 
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: bold;
-        }
+footer{padding:40px 56px; font-family:var(--mono); font-size:11.5px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
 
-        .badge-stealth-high { background-color: #14532d; color: #4ade80; }
-        .badge-stealth-medium { background-color: #78350f; color: #fbbf24; }
-        .badge-stealth-low { background-color: #7f1d1d; color: #f87171; }
-        .badge-stealth-na { background-color: #475569; color: #cbd5e1; }
-
-        .template-block {
-            background-color: #0b0f19;
-            border: 1px dashed var(--accent-color);
-            padding: 20px;
-            border-radius: 8px;
-            font-family: inherit;
-        }
-    </style>
+@media (max-width:900px){
+  .hero{padding:40px 24px 32px;}
+  section.phase{padding:36px 24px;}
+  footer{padding:30px 24px;}
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <p style="color: var(--accent-color); font-weight: bold; text-transform: uppercase; margin: 0; letter-spacing: 1px;">120-Day Cybersecurity Learning Roadmap</p>
-        <h1>Day 11: NMAP</h1>
-    </header>
+<div class="shell">
 
-    <section class="card">
-        <h2>Objective</h2>
-        <p>Today you will learn how to use <strong>Nmap (Network Mapper)</strong>, the most popular network discovery and security auditing tool used by cybersecurity professionals worldwide.</p>
-        
-        <h3>Nmap is essential for:</h3>
-        <ul>
-            <li>Network Discovery</li>
-            <li>Port Scanning</li>
-            <li>Service Enumeration</li>
-            <li>Operating System Detection</li>
-            <li>Vulnerability Assessment</li>
-            <li>Security Auditing</li>
-        </ul>
+  <aside class="rail">
+    <div class="rail-brand">120-day cybersecurity roadmap // network recon module</div>
+    <p class="rail-title">Day <span>11</span> — Nmap</p>
+    <nav>
+      <a href="#overview"><span class="n">00</span> Overview &amp; objective</a>
+      <a href="#why"><span class="n">01</span> Why Nmap matters</a>
+      <a href="#portscanning"><span class="n">02</span> What is port scanning?</a>
+      <a href="#scantypes"><span class="n">03</span> Scan types, explained mechanically</a>
+      <a href="#options"><span class="n">04</span> Key options &amp; flags</a>
+      <a href="#timing"><span class="n">05</span> Timing templates (-T0 to -T5)</a>
+      <a href="#nse"><span class="n">06</span> NSE scripts under the hood</a>
+      <a href="#states"><span class="n">07</span> Reading port states</a>
+      <a href="#setup"><span class="n">08</span> Lab setup — Metasploitable2</a>
+      <a href="#lab"><span class="n">09</span> Hands-on scanning lab</a>
+      <a href="#safety"><span class="n">10</span> Safety &amp; legal guidelines</a>
+      <a href="#deliverables"><span class="n">11</span> Deliverables</a>
+      <a href="#resources"><span class="n">12</span> Learning resources</a>
+      <a href="#troubleshoot"><span class="n">13</span> Troubleshooting</a>
+      <a href="#cheatsheet"><span class="n">14</span> Command cheat-sheet</a>
+      <a href="#nextsteps"><span class="n">15</span> Next steps</a>
+    </nav>
+    <div class="rail-meta">
+      <div><b>Tools:</b> Nmap, VirtualBox, Metasploitable2</div>
+      <div><b>Est. time:</b> 4–5 hrs (incl. VM setup)</div>
+      <div><b>Prepares for:</b> Vuln assessment, enumeration, pentesting</div>
+    </div>
+  </aside>
 
-        <h3>This lesson prepares you for:</h3>
-        <ul>
-            <li>Vulnerability Assessment</li>
-            <li>Enumeration Techniques</li>
-            <li>Penetration Testing</li>
-            <li>Security Auditing</li>
-            <li>Red Team Activities</li>
-        </ul>
+  <main>
+
+    <div class="hero">
+      <div class="hero-eyebrow">day 11 · network recon module</div>
+      <h1>Nmap — network discovery &amp; <span class="accent">port scanning</span> in depth</h1>
+      <p class="lede">
+        Before you can secure, exploit, or even meaningfully describe a target system, you need to know
+        what's actually exposed on it. Nmap is how almost every real engagement — vulnerability assessment,
+        pentest, red team op — begins.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">port scanning</span>
+        <span class="tag">SYN / connect scans</span>
+        <span class="tag">service &amp; OS detection</span>
+        <span class="tag">NSE scripts</span>
+        <span class="tag">Metasploitable2 lab</span>
+      </div>
+
+      <div class="flow-strip">
+        <div class="flow-node"><b>01 · discover</b>Which hosts are alive</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>02 · scan</b>Which ports are open</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>03 · enumerate</b>Which services &amp; versions</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>04 · profile</b>OS fingerprint, NSE scripts</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>05 · report</b>Document the attack surface</div>
+      </div>
+    </div>
+
+    <!-- 00 OVERVIEW -->
+    <section class="phase" id="overview">
+      <div class="phase-head">
+        <span class="phase-num">00</span>
+        <h2>Overview &amp; objective</h2>
+      </div>
+      <p class="phase-sub">Nmap — Network Mapper — the most widely used network discovery and security auditing tool in the field.</p>
+
+      <p>
+        Today's objective is hands-on fluency with Nmap for the core reconnaissance loop: find live hosts,
+        find open ports on those hosts, identify what's actually running on those ports, and pull whatever
+        version/OS fingerprinting detail is available. Nmap is essential for:
+      </p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>What Nmap does</h4>
+          <ul>
+            <li>Network discovery</li>
+            <li>Port scanning</li>
+            <li>Service enumeration</li>
+            <li>Operating system detection</li>
+            <li>Vulnerability assessment (via NSE)</li>
+            <li>Security auditing</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>What today prepares you for</h4>
+          <ul>
+            <li>Vulnerability assessment (Day-11-style OpenVAS work elsewhere in the roadmap)</li>
+            <li>Enumeration techniques</li>
+            <li>Penetration testing</li>
+            <li>Security auditing</li>
+            <li>Red team reconnaissance phases</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <section>
-        <h2>Why Nmap Matters</h2>
-        <p>Before securing a system, you must understand what is exposed. Nmap helps security professionals:</p>
-        <ul>
-            <li>Discover live hosts</li>
-            <li>Identify open ports</li>
-            <li>Determine running services</li>
-            <li>Detect service versions</li>
-            <li>Identify operating systems</li>
-            <li>Find potential vulnerabilities</li>
-        </ul>
-        <p>In real-world engagements, Nmap is often the first tool used during <strong>reconnaissance</strong>.</p>
+    <!-- 01 WHY -->
+    <section class="phase" id="why">
+      <div class="phase-head">
+        <span class="phase-num">01</span>
+        <h2>Why Nmap matters</h2>
+      </div>
+      <p class="phase-sub">You cannot secure — or attack — what you don't know exists.</p>
+
+      <p>
+        Before securing a system, you must understand what is actually exposed. Nmap helps security
+        professionals discover live hosts, identify open ports, determine running services, detect service
+        versions, identify operating systems, and surface potential vulnerabilities — all from the network
+        side, without needing any credentials or prior access.
+      </p>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ where this sits in a real engagement</div>
+        <p>
+          In real-world engagements, Nmap is almost always the first tool used during
+          <strong>reconnaissance</strong> — the phase where you build a map of the target before deciding
+          what to attack, what to scan more deeply (a GVM/OpenVAS-style vulnerability scan), or what to
+          report. Everything downstream depends on this map being accurate.
+        </p>
+      </div>
     </section>
 
-    <section>
-        <h2>What Is Port Scanning?</h2>
-        <p>Port scanning is the process of checking which ports on a target system are open, closed, or filtered. Understanding open ports helps security professionals identify:</p>
-        <ul>
-            <li>Running services</li>
-            <li>Potential attack surfaces</li>
-            <li>Misconfigurations</li>
-            <li>Security risks</li>
-        </ul>
+    <!-- 02 PORT SCANNING -->
+    <section class="phase" id="portscanning">
+      <div class="phase-head">
+        <span class="phase-num">02</span>
+        <h2>What is port scanning?</h2>
+      </div>
+      <p class="phase-sub">The mechanical question underneath everything else today: is anything listening here?</p>
+
+      <p>
+        Port scanning is the process of checking which ports on a target system are open, closed, or
+        filtered. A "port" here is just a numbered endpoint (0–65535) that a service binds to — port 22 for
+        SSH, port 80 for HTTP, port 3306 for MySQL, and so on by convention, though nothing stops a service
+        from running on an unconventional port. Understanding open ports helps security professionals
+        identify running services, potential attack surfaces, misconfigurations, and security risks.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-head">▸ the mental model</div>
+        <p>
+          Think of a target machine as a building with thousands of numbered doors. Most are locked
+          (closed) or don't exist in any meaningful sense for this building (filtered by a firewall before
+          you even reach the door). A handful are unlocked because something inside is actively expecting
+          visitors (open, with a service listening). Port scanning is systematically knocking on every door
+          to map which ones respond.
+        </p>
+      </div>
     </section>
 
-    <section>
-        <h2>Common Nmap Scan Types</h2>
+    <!-- 03 SCAN TYPES -->
+    <section class="phase" id="scantypes">
+      <div class="phase-head">
+        <span class="phase-num">03</span>
+        <h2>Common Nmap scan types — explained mechanically</h2>
+      </div>
+      <p class="phase-sub">Not just flags to memorize — what's actually happening on the wire for each one, and why that changes stealth.</p>
+
+      <div class="table-wrap">
         <table>
-            <thead>
-                <tr>
-                    <th>Flag</th>
-                    <th>Scan Type</th>
-                    <th>Description</th>
-                    <th>Use Case</th>
-                    <th>Stealth Level</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>-sS</code></td>
-                    <td><strong>TCP SYN Scan</strong></td>
-                    <td>Half-open scan</td>
-                    <td>General reconnaissance</td>
-                    <td><span class="badge badge-stealth-high">High</span></td>
-                </tr>
-                <tr>
-                    <td><code>-sT</code></td>
-                    <td><strong>TCP Connect Scan</strong></td>
-                    <td>Full TCP handshake</td>
-                    <td>No root privileges</td>
-                    <td><span class="badge badge-stealth-low">Low</span></td>
-                </tr>
-                <tr>
-                    <td><code>-sV</code></td>
-                    <td><strong>Version Detection</strong></td>
-                    <td>Detect service versions</td>
-                    <td>Service enumeration</td>
-                    <td><span class="badge badge-stealth-medium">Medium</span></td>
-                </tr>
-                <tr>
-                    <td><code>-O</code></td>
-                    <td><strong>OS Detection</strong></td>
-                    <td>Detect operating system</td>
-                    <td>Host profiling</td>
-                    <td><span class="badge badge-stealth-medium">Medium</span></td>
-                </tr>
-                <tr>
-                    <td><code>-A</code></td>
-                    <td><strong>Aggressive Scan</strong></td>
-                    <td>OS, Version, Scripts, Traceroute</td>
-                    <td>Detailed reconnaissance</td>
-                    <td><span class="badge badge-stealth-low">Low</span></td>
-                </tr>
-                <tr>
-                    <td><code>-p</code></td>
-                    <td><strong>Port Selection</strong></td>
-                    <td>Scan specific ports</td>
-                    <td>Targeted scanning</td>
-                    <td><span class="badge badge-stealth-na">N/A</span></td>
-                </tr>
-                <tr>
-                    <td><code>--script</code></td>
-                    <td><strong>NSE Scripts</strong></td>
-                    <td>Run scripts</td>
-                    <td>Advanced enumeration</td>
-                    <td><span class="badge badge-stealth-na">Varies</span></td>
-                </tr>
-            </tbody>
+          <thead><tr><th>Flag</th><th>Scan type</th><th>Description</th><th>Use case</th><th>Stealth</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">-sS</code></td><td><strong>TCP SYN Scan</strong></td><td>Half-open scan</td><td>General reconnaissance</td><td><span class="pill high">High</span></td></tr>
+            <tr><td><code class="inline">-sT</code></td><td><strong>TCP Connect Scan</strong></td><td>Full TCP handshake</td><td>No root privileges available</td><td><span class="pill low">Low</span></td></tr>
+            <tr><td><code class="inline">-sV</code></td><td><strong>Version Detection</strong></td><td>Detect service versions</td><td>Service enumeration</td><td><span class="pill medium">Medium</span></td></tr>
+            <tr><td><code class="inline">-O</code></td><td><strong>OS Detection</strong></td><td>Detect operating system</td><td>Host profiling</td><td><span class="pill medium">Medium</span></td></tr>
+            <tr><td><code class="inline">-A</code></td><td><strong>Aggressive Scan</strong></td><td>OS, version, scripts, traceroute</td><td>Detailed reconnaissance</td><td><span class="pill low">Low</span></td></tr>
+            <tr><td><code class="inline">-p</code></td><td><strong>Port Selection</strong></td><td>Scan specific ports</td><td>Targeted scanning</td><td><span class="pill na">N/A</span></td></tr>
+            <tr><td><code class="inline">--script</code></td><td><strong>NSE Scripts</strong></td><td>Run scripts</td><td>Advanced enumeration</td><td><span class="pill na">Varies</span></td></tr>
+          </tbody>
         </table>
+      </div>
+
+      <h3><span class="h3-mark">⚙</span> Why SYN scan (-sS) is stealthier than Connect scan (-sT)</h3>
+      <p>
+        This is the single most-asked "why" in this table, and it's worth understanding the actual TCP
+        mechanics rather than memorizing "SYN = stealthy":
+      </p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>-sT — full connect scan</h4>
+          <p>Completes the entire three-way TCP handshake: SYN → SYN/ACK → ACK. Because a full connection is
+          established, the operating system's normal connection logging captures it — every connect scan
+          shows up in application-level logs on the target as a real connection attempt. This is also why it
+          doesn't require root/admin privileges: it's just asking the OS's normal socket API to connect like
+          any other program would.</p>
+        </div>
+        <div class="card">
+          <h4>-sS — SYN ("half-open") scan</h4>
+          <p>Sends only the initial SYN packet. If the target replies <strong>SYN/ACK</strong>, Nmap knows
+          the port is open — and immediately sends a <strong>RST</strong> instead of completing the
+          handshake with an ACK. Because the connection is never actually established, many applications
+          never log it at the application layer (though it can still appear in firewall/IDS logs watching
+          raw packets) — hence "stealthier." It requires raw packet crafting, which is why it needs root
+          privileges.</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ "stealth" is relative, not absolute</div>
+        <p>
+          A SYN scan is stealthier <em>relative to a full connect scan</em> against basic logging — it is
+          not invisible. Any modern IDS/IPS or even a default firewall logging dropped/reset connections will
+          still see a SYN scan's traffic pattern (many ports, rapid SYNs, no completed handshakes) and flag
+          it as reconnaissance. Don't treat "-sS" as a magic invisibility flag.
+        </p>
+      </div>
+
+      <h3><span class="h3-mark">⚙</span> Why -A is "Low" stealth despite being the most useful single flag</h3>
+      <p>
+        <code class="inline">-A</code> is shorthand for enabling OS detection, version detection, default NSE
+        scripts, <em>and</em> traceroute all at once. Each of those individually adds detectable traffic
+        patterns (OS detection alone sends a distinctive battery of unusual packets to provoke fingerprint-
+        revealing responses) — stacking all four makes an aggressive scan extremely easy to fingerprint as
+        reconnaissance, even though it's enormously useful for fast, thorough lab learning where stealth
+        doesn't matter yet.
+      </p>
     </section>
 
-    <section>
-        <h2>Important Nmap Options</h2>
-        
-        <h3>Skip Host Discovery</h3>
-        <pre><code>nmap -Pn &lt;target&gt;</code></pre>
-        <p><strong>Purpose:</strong> Assume the target is online; useful when ICMP is blocked.</p>
+    <!-- 04 OPTIONS -->
+    <section class="phase" id="options">
+      <div class="phase-head">
+        <span class="phase-num">04</span>
+        <h2>Key options &amp; flags</h2>
+      </div>
+      <p class="phase-sub">The handful of modifiers you'll reach for in nearly every real scan.</p>
 
-        <h3>Faster Scanning</h3>
-        <pre><code>nmap -T4 &lt;target&gt;</code></pre>
-        <p><strong>Purpose:</strong> Increase scanning speed; useful in lab environments.</p>
+      <h3><span class="h3-mark">$</span> Skip host discovery</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="prompt">$</span> nmap -Pn <span class="var">&lt;target&gt;</span></pre>
+      </div>
+      <p>
+        <strong>Purpose:</strong> Assume the target is online and skip the initial ping/ARP-based
+        alive-check. Useful when ICMP is blocked by a firewall — without
+        <code class="inline">-Pn</code>, Nmap may conclude a perfectly live, listening host is "down" simply
+        because it doesn't respond to ping, and skip scanning it entirely.
+      </p>
 
-        <h3>Save Results</h3>
-        <pre><code>nmap -oN scan_results.txt &lt;target&gt;</code></pre>
-        <p><strong>Purpose:</strong> Save output to a file; useful for documentation and reporting.</p>
+      <h3><span class="h3-mark">$</span> Faster scanning</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="prompt">$</span> nmap -T4 <span class="var">&lt;target&gt;</span></pre>
+      </div>
+      <p>
+        <strong>Purpose:</strong> Increase scanning speed by reducing inter-probe delays and timeouts —
+        covered fully in the timing section below. Useful in lab environments with no IDS to worry about
+        triggering.
+      </p>
+
+      <h3><span class="h3-mark">$</span> Save results</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="prompt">$</span> nmap -oN scan_results.txt <span class="var">&lt;target&gt;</span></pre>
+      </div>
+      <p>
+        <strong>Purpose:</strong> Save output to a file for documentation and reporting.
+        <code class="inline">-oN</code> writes normal human-readable format; swap to
+        <code class="inline">-oX</code> for structured XML (parseable by other tools and report generators)
+        or <code class="inline">-oA</code> to write normal, XML, and grepable formats all at once with one
+        filename stem.
+      </p>
+
+      <h3><span class="h3-mark">$</span> Scanning a range instead of a single host</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># CIDR notation — scan an entire /24 subnet</span>
+<span class="prompt">$</span> nmap <span class="var">192.168.56.0/24</span>
+
+<span class="c"># explicit range</span>
+<span class="prompt">$</span> nmap <span class="var">192.168.56.10-50</span>
+
+<span class="c"># multiple specific targets</span>
+<span class="prompt">$</span> nmap <span class="var">192.168.56.101 192.168.56.102 192.168.56.105</span></pre>
+      </div>
+      <p>
+        Worth knowing even though today's lab targets a single Metasploitable2 VM — real engagements almost
+        always start with a range, not a single known IP.
+      </p>
     </section>
 
-    <section class="card">
-        <h2>Recommended Learning Resources</h2>
-        <h3>TryHackMe</h3>
-        <p>Complete the <strong>Nmap Room</strong> focusing on:</p>
-        <ul>
-            <li>Scanning Techniques</li>
-            <li>Service Enumeration</li>
-            <li>NSE Scripts</li>
-        </ul>
+    <!-- 05 TIMING -->
+    <section class="phase" id="timing">
+      <div class="phase-head">
+        <span class="phase-num">05</span>
+        <h2>Timing templates (-T0 through -T5)</h2>
+      </div>
+      <p class="phase-sub">The source material mentions -T4 once with no context — here's the full scale, since you'll see all six in the wild.</p>
 
-        <h3>Official Documentation</h3>
-        <p>Read the <a href="https://nmap.org/book/" target="_blank" style="color: var(--accent-color);">Nmap Book</a> focusing on:</p>
-        <ul>
-            <li>Basic Scanning</li>
-            <li>Port States</li>
-            <li>Version Detection</li>
-        </ul>
+      <div class="timing-row"><span class="timing-flag">-T0</span><span class="timing-name">Paranoid</span><span class="timing-desc">One probe at a time, very long delays — designed to evade IDS detection over hours/days. Rarely used outside red team OPSEC-critical work.</span></div>
+      <div class="timing-row"><span class="timing-flag">-T1</span><span class="timing-name">Sneaky</span><span class="timing-desc">Similar intent to T0, somewhat faster — still built for evasion over a long time window.</span></div>
+      <div class="timing-row"><span class="timing-flag">-T2</span><span class="timing-name">Polite</span><span class="timing-desc">Slows down to reduce bandwidth/load impact on the target — considerate of fragile or low-bandwidth targets, not primarily about evasion.</span></div>
+      <div class="timing-row"><span class="timing-flag">-T3</span><span class="timing-name">Normal</span><span class="timing-desc">The default if no -T flag is given — a reasonable general-purpose balance.</span></div>
+      <div class="timing-row"><span class="timing-flag">-T4</span><span class="timing-name">Aggressive</span><span class="timing-desc">Assumes a fast, reliable network — shorter timeouts, more parallelism. The standard choice for lab work and CTFs where speed matters more than subtlety.</span></div>
+      <div class="timing-row"><span class="timing-flag">-T5</span><span class="timing-name">Insane</span><span class="timing-desc">Maximum speed, sacrifices accuracy — packets sent so fast that slower or heavily-loaded targets may give incomplete/incorrect results. Use only when speed matters more than reliability.</span></div>
 
-        <h3>YouTube Recommendations</h3>
-        <ul>
-            <li>NetworkChuck – Nmap Tutorial</li>
-            <li>IppSec – Nmap Enumeration Examples</li>
-        </ul>
+      <div class="callout note">
+        <div class="callout-head">▸ the practical rule</div>
+        <p>
+          In your home lab against Metasploitable2: <code class="inline">-T4</code> is the right default —
+          fast enough to keep labs from dragging, reliable enough not to miss results. Save T0–T2 for when
+          you're specifically practicing evasion technique against a target with active monitoring, which
+          comes later in the roadmap.
+        </p>
+      </div>
     </section>
 
-    <section>
-        <h2>Hands-On Lab (2–3 Hours)</h2>
-        
-        <h3>Step 1 – Set Up Metasploitable2</h3>
-        <p>Metasploitable2 is an intentionally vulnerable Linux machine designed for cybersecurity training.</p>
-        <ol>
-            <li>Download Metasploitable2.</li>
-            <li>Extract the downloaded ZIP file.</li>
-            <li>Open VirtualBox.</li>
-            <li>Create a new virtual machine.</li>
-            <li>Use the extracted VMDK file as the hard disk.</li>
-            <li>Configure the network adapter as: <strong>Host-Only Adapter</strong> OR <strong>Internal Network</strong>.</li>
-            <li>Start the VM.</li>
-        </ol>
-        <p><strong>Default Credentials:</strong> Username: <code>msfadmin</code> | Password: <code>msfadmin</code></p>
+    <!-- 06 NSE -->
+    <section class="phase" id="nse">
+      <div class="phase-head">
+        <span class="phase-num">06</span>
+        <h2>NSE scripts under the hood</h2>
+      </div>
+      <p class="phase-sub">The source material uses <code class="inline">--script vuln</code> in the lab without ever explaining what NSE actually is — here's the missing piece.</p>
 
-        <h3>Step 2 – Identify Target IP Address</h3>
-        <p>Inside Metasploitable2, run:</p>
-        <pre><code>ip addr</code></pre>
-        <p>Record the IP address (Example: <code>192.168.56.101</code>).</p>
+      <p>
+        NSE (Nmap Scripting Engine) is a Lua-based scripting framework built into Nmap that lets it go far
+        beyond "is this port open" into actual service interrogation — banner grabbing, brute-forcing weak
+        credentials, checking for specific known vulnerabilities, and more. Scripts are organized into
+        categories, and you'll use a handful constantly:
+      </p>
 
-        <h3>Step 3 – Perform Basic Scan</h3>
-        <pre><code>nmap &lt;target_IP&gt;</code></pre>
-        <p><strong>Purpose:</strong> Discover open ports and identify basic services.</p>
+      <div class="grid2">
+        <div class="card">
+          <h4>--script vuln</h4>
+          <p>Runs every script tagged in the "vuln" category — checks for a wide range of known
+          vulnerabilities against detected services. This is what the lab's Step 6 uses; it's effectively a
+          lightweight, Nmap-native cousin of what a dedicated scanner like OpenVAS does at much greater
+          depth.</p>
+        </div>
+        <div class="card">
+          <h4>--script default (-sC)</h4>
+          <p>A curated, safe-by-default set of scripts covering common, low-risk information gathering —
+          this is what's bundled automatically inside <code class="inline">-A</code>.</p>
+        </div>
+        <div class="card">
+          <h4>--script discovery</h4>
+          <p>Scripts focused on gathering more information about the network and host without targeting
+          specific vulnerabilities — e.g. SMB share enumeration, DNS zone info.</p>
+        </div>
+        <div class="card">
+          <h4>--script &lt;specific-script-name&gt;</h4>
+          <p>Run one named script directly — e.g.
+          <code class="inline">--script smb-vuln-ms17-010</code> to check specifically for EternalBlue
+          exposure, once you know exactly what you're looking for.</p>
+        </div>
+      </div>
 
-        <h3>Step 4 – SYN Scan with Version Detection</h3>
-        <pre><code>sudo nmap -sS -sV &lt;target_IP&gt;</code></pre>
-        <p><strong>Purpose:</strong> Perform stealth scanning and detect service versions.</p>
+      <div class="callout warn">
+        <div class="callout-head">▸ vuln-category scripts are not always safe</div>
+        <p>
+          Some scripts in the <code class="inline">vuln</code> category are intrusive — a handful can
+          actually crash a fragile or unpatched service while testing for the vulnerability (this overlaps
+          with the same caution OpenVAS's "Full and fast ultimate" profile requires). Fine against
+          Metasploitable2, which is built to be hammered on; think twice before running
+          <code class="inline">--script vuln</code> against anything more fragile or production-adjacent.
+        </p>
+      </div>
 
-        <h3>Step 5 – Aggressive Scan</h3>
-        <pre><code>sudo nmap -A -T4 &lt;target_IP&gt;</code></pre>
-        <p><strong>Purpose:</strong> Detect operating system, run default scripts, perform traceroute, and collect detailed information.</p>
-
-        <h3>Step 6 – Vulnerability Script Scan</h3>
-        <pre><code>sudo nmap -sV -p 21,22,80,443 --script vuln &lt;target_IP&gt;</code></pre>
-        <p><strong>Purpose:</strong> Identify known vulnerabilities, enumerate services, and practice security assessment techniques.</p>
+      <div class="gem">
+        <div class="gem-icon">▶</div>
+        <div class="gem-body">
+          <div class="gem-label">gem resource — NSE in real engagements</div>
+          <div class="gem-title">IppSec — Nmap enumeration walkthroughs (YouTube)</div>
+          <p class="gem-why">
+            IppSec's HackTheBox walkthroughs consistently show exactly how working pentesters actually choose
+            and chain NSE scripts mid-engagement, rather than running every category blindly — the single
+            best way to see judgment applied to this tool instead of just a flag reference.
+          </p>
+          <a class="gem-link" href="https://www.youtube.com/@ippsec" target="_blank" rel="noopener">youtube.com/@ippsec ↗</a>
+        </div>
+      </div>
     </section>
 
-    <section>
-        <h2>Understanding Nmap Results</h2>
-        <ul>
-            <li><strong>Open:</strong> A service is actively listening on that port. <br><em>Example:</em> <code>22/tcp open ssh</code></li>
-            <li><strong>Closed:</strong> No service is listening. <br><em>Example:</em> <code>443/tcp closed https</code></li>
-            <li><strong>Filtered:</strong> A firewall or filtering device is blocking access. <br><em>Example:</em> <code>80/tcp filtered http</code></li>
-        </ul>
+    <!-- 07 PORT STATES -->
+    <section class="phase" id="states">
+      <div class="phase-head">
+        <span class="phase-num">07</span>
+        <h2>Reading port states</h2>
+      </div>
+      <p class="phase-sub">Three words that mean three completely different security stories.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>State</th><th>Example</th><th>What actually happened on the wire</th><th>Security implication</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="pill high">Open</span></td>
+              <td><code class="inline">22/tcp open ssh</code></td>
+              <td>Target replied SYN/ACK (or completed handshake) — a service is actively bound and listening.</td>
+              <td>Real attack surface — this is a service you can actually try to interact with, authenticate to, or exploit.</td>
+            </tr>
+            <tr>
+              <td><span class="pill low">Closed</span></td>
+              <td><code class="inline">443/tcp closed https</code></td>
+              <td>Target replied with a RST — reachable, but explicitly nothing listening.</td>
+              <td>Confirms the host is alive and the network path is open, but this specific port is not currently usable.</td>
+            </tr>
+            <tr>
+              <td><span class="pill medium">Filtered</span></td>
+              <td><code class="inline">80/tcp filtered http</code></td>
+              <td>No response at all (or an ICMP unreachable) — a firewall or filtering device is dropping the probe before it reaches the actual service.</td>
+              <td>You genuinely don't know if a service is there. Filtered ports often deserve a second look with a different scan technique or source port before writing them off.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ why "filtered" deserves more attention than it gets</div>
+        <p>
+          Closed tells you something definite (no service there). Filtered tells you almost nothing — it
+          could be a heavily-firewalled critical service or genuinely nothing at all. Beginners often treat
+          filtered the same as closed and move on; experienced testers treat a filtered port as an open
+          question worth one more probe with different timing, source port, or scan type before concluding
+          anything.
+        </p>
+      </div>
     </section>
 
-    <section class="card alert-danger">
-        <h2>Safety Guidelines</h2>
-        <p><strong>Only scan:</strong> Your Kali VM, Metasploitable2, systems you own, or authorized lab environments.</p>
-        <p><strong>Never scan:</strong> Public IP addresses, company networks without permission, or unknown systems.</p>
-        <p><em>Unauthorized scanning may violate laws or policies.</em></p>
+    <!-- 08 SETUP -->
+    <section class="phase" id="setup">
+      <div class="phase-head">
+        <span class="phase-num">08</span>
+        <h2>Lab setup — Metasploitable2</h2>
+      </div>
+      <p class="phase-sub">An intentionally vulnerable Linux machine, purpose-built for exactly this kind of training.</p>
+
+      <ol class="steps">
+        <li><strong>Download Metasploitable2</strong>
+          From a reputable mirror (Rapid7's official SourceForge listing is the canonical source).
+        </li>
+        <li><strong>Extract the downloaded ZIP file</strong>
+          You'll get a folder containing a <code class="inline">.vmdk</code> virtual disk file.
+        </li>
+        <li><strong>Open VirtualBox and create a new virtual machine</strong>
+          Type: Linux, version: Ubuntu (older, 32-bit) — Metasploitable2 is built on an old Ubuntu base, so
+          don't worry about matching modern specs exactly.
+        </li>
+        <li><strong>Use the extracted VMDK file as the hard disk</strong>
+          When prompted for a virtual hard disk, choose "Use an existing virtual hard disk file" and point
+          it at the <code class="inline">.vmdk</code> you extracted.
+        </li>
+        <li><strong>Configure the network adapter</strong>
+          Set it to <strong>Host-Only Adapter</strong> or <strong>Internal Network</strong> — both isolate
+          the VM to a private virtual segment shared with your Kali VM, keeping it off your real LAN and the
+          internet entirely. This is the single most important setup step for both safety and for your Kali
+          box actually being able to reach it.
+        </li>
+        <li><strong>Start the VM</strong>
+          Boot can take a minute or two on the old kernel — this is normal, not a hang.
+        </li>
+      </ol>
+
+      <div class="callout note">
+        <div class="callout-head">▸ default credentials</div>
+        <p>
+          Username: <code class="inline">msfadmin</code> · Password: <code class="inline">msfadmin</code> —
+          deliberately weak and well-documented, since the entire point of this VM is to be broken into.
+        </p>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ never bridge this VM's network adapter</div>
+        <p>
+          Metasploitable2 is intentionally riddled with unpatched, severe vulnerabilities. Setting its
+          network adapter to Bridged (instead of Host-Only/Internal) would expose every one of those
+          vulnerabilities to your actual home or office network. Double-check this setting before powering
+          on for the first time.
+        </p>
+      </div>
     </section>
+
+    <!-- 09 LAB -->
+    <section class="phase" id="lab">
+      <div class="phase-head">
+        <span class="phase-num">09</span>
+        <h2>Hands-on scanning lab (2–3 hours)</h2>
+      </div>
+      <p class="phase-sub">Six steps, each building on the last — from finding the target to surfacing real vulnerabilities.</p>
+
+      <h3><span class="h3-mark">①</span> Identify the target IP address</h3>
+      <p>Inside Metasploitable2, run:</p>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">msfadmin@metasploitable</span></div>
+        <pre><span class="prompt">$</span> ip addr
+
+<span class="out">2: eth0: ... inet 192.168.56.101/24 ...</span></pre>
+      </div>
+      <p>Record the IP address — example used throughout: <code class="inline">192.168.56.101</code>.</p>
+
+      <h3><span class="h3-mark">②</span> Perform a basic scan</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">kali — bash</span></div>
+        <pre><span class="prompt">$</span> nmap <span class="var">192.168.56.101</span>
+
+<span class="out">PORT     STATE SERVICE
+21/tcp   <span class="st-open">open</span>  ftp
+22/tcp   <span class="st-open">open</span>  ssh
+23/tcp   <span class="st-open">open</span>  telnet
+25/tcp   <span class="st-open">open</span>  smtp
+80/tcp   <span class="st-open">open</span>  http
+139/tcp  <span class="st-open">open</span>  netbios-ssn
+445/tcp  <span class="st-open">open</span>  microsoft-ds
+3306/tcp <span class="st-open">open</span>  mysql</span></pre>
+      </div>
+      <p><strong>Purpose:</strong> Discover open ports and identify basic services using Nmap's default top-1000-port scan with no special flags.</p>
+
+      <h3><span class="h3-mark">③</span> SYN scan with version detection</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">kali — bash</span></div>
+        <pre><span class="prompt">$</span> sudo nmap -sS -sV <span class="var">192.168.56.101</span>
+
+<span class="out">21/tcp open  ftp     vsftpd 2.3.4
+22/tcp open  ssh     OpenSSH 4.7p1 Debian 8ubuntu1
+23/tcp open  telnet  Linux telnetd</span></pre>
+      </div>
+      <p>
+        <strong>Purpose:</strong> Perform stealthier half-open scanning while also pulling specific service
+        version strings — <code class="inline">vsftpd 2.3.4</code> here is a famous, deliberately-planted
+        backdoored version on this VM, exactly the kind of detail you'd cross-reference against a CVE
+        database next.
+      </p>
+
+      <h3><span class="h3-mark">④</span> Aggressive scan</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">kali — bash</span></div>
+        <pre><span class="prompt">$</span> sudo nmap -A -T4 <span class="var">192.168.56.101</span></pre>
+      </div>
+      <p>
+        <strong>Purpose:</strong> Detect operating system, run default NSE scripts, perform a traceroute, and
+        collect detailed information — the broadest single-command sweep available, at the cost of subtlety
+        as covered in Phase 03.
+      </p>
+
+      <h3><span class="h3-mark">⑤</span> Vulnerability script scan</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">kali — bash</span></div>
+        <pre><span class="prompt">$</span> sudo nmap -sV -p 21,22,80,443 --script vuln <span class="var">192.168.56.101</span></pre>
+      </div>
+      <p>
+        <strong>Purpose:</strong> Identify known vulnerabilities, enumerate services, and practice security
+        assessment technique — narrowing to specific ports with <code class="inline">-p</code> first keeps
+        this from taking forever, since the vuln script category is large.
+      </p>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ document as you go, not after</div>
+        <p>
+          Pipe every step's output into <code class="inline">-oN</code> files as you run them (Phase 04) —
+          re-running scans later to recreate a screenshot you forgot to save is the single most common
+          time-waster in this kind of lab exercise.
+        </p>
+      </div>
+    </section>
+
+    <!-- 10 SAFETY -->
+    <section class="phase" id="safety">
+      <div class="phase-head">
+        <span class="phase-num">10</span>
+        <h2>Safety &amp; legal guidelines</h2>
+      </div>
+      <p class="phase-sub">Non-negotiable, every single time you open a terminal with Nmap in it.</p>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ scope, stated plainly</div>
+        <p>
+          <strong>Only scan:</strong> your own Kali VM, Metasploitable2, systems you personally own, or
+          environments you have explicit written authorization to test.<br>
+          <strong>Never scan:</strong> public IP addresses, company networks without permission, or any
+          system whose ownership/authorization you're not certain of.<br>
+          Unauthorized scanning may violate computer-misuse laws (e.g. the CFAA in the US, the Computer
+          Misuse Act in the UK, and equivalent statutes elsewhere) or organizational policy, independent of
+          whether anything was actually exploited.
+        </p>
+      </div>
+
+      <p>
+        Even "just" a port scan against a system you don't control can trigger an incident response process
+        on the receiving end, regardless of intent — treat scope as a hard boundary, not a guideline.
+      </p>
+    </section>
+
+    <!-- 11 DELIVERABLES -->
+    <section class="phase" id="deliverables">
+      <div class="phase-head">
+        <span class="phase-num">11</span>
+        <h2>Deliverables</h2>
+      </div>
+      <p class="phase-sub">Turn today's scans into something reviewable.</p>
+
+      <div class="deliverables">
+        <h4>Suggested files for today</h4>
+        <div class="file-item">day11_nmap_basic_scan.txt</div>
+        <div class="file-item">day11_nmap_sV_sS.txt</div>
+        <div class="file-item">day11_nmap_aggressive.txt</div>
+        <div class="file-item">day11_nmap_vuln_scan.txt</div>
+        <div class="file-item">day11_nmap_notes.md</div>
+      </div>
+
+      <p>In <code class="inline">day11_nmap_notes.md</code>, capture at minimum:</p>
+      <ul class="checklist">
+        <li><span class="box"></span><span>Every open port found on the Metasploitable2 target, with the service and version string where detected</span></li>
+        <li><span class="box"></span><span>One paragraph distinguishing what <code class="inline">-sS</code> and <code class="inline">-sT</code> each actually do on the wire, in your own words</span></li>
+        <li><span class="box"></span><span>At least one finding from the <code class="inline">--script vuln</code> scan, with a note on whether you could explain why it's flagged</span></li>
+        <li><span class="box"></span><span>Any port that came back <em>filtered</em> rather than open/closed, and your hypothesis for why</span></li>
+      </ul>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">git</span></div>
+        <pre><span class="prompt">$</span> git add day11_nmap_*.txt day11_nmap_notes.md
+<span class="prompt">$</span> git commit -m <span class="var">"Day 11: Nmap scanning, enumeration, and NSE vuln detection"</span>
+<span class="prompt">$</span> git push</pre>
+      </div>
+    </section>
+
+    <!-- 12 RESOURCES -->
+    <section class="phase" id="resources">
+      <div class="phase-head">
+        <span class="phase-num">12</span>
+        <h2>Recommended learning resources</h2>
+      </div>
+      <p class="phase-sub">Beginner-friendly, in priority order.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>TryHackMe</h4>
+          <p>Complete the <strong>Nmap Room</strong>, focusing on:</p>
+          <ul>
+            <li>Scanning techniques</li>
+            <li>Service enumeration</li>
+            <li>NSE scripts</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Official documentation</h4>
+          <p>Read the <a href="https://nmap.org/book/" target="_blank" rel="noopener">Nmap Book</a>, focusing on:</p>
+          <ul>
+            <li>Basic scanning</li>
+            <li>Port states</li>
+            <li>Version detection</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="gem">
+        <div class="gem-icon">▶</div>
+        <div class="gem-body">
+          <div class="gem-label">gem resource — the single best starting video</div>
+          <div class="gem-title">NetworkChuck — Nmap Tutorial (YouTube)</div>
+          <p class="gem-why">
+            The most approachable full walkthrough for a true beginner — covers the same scan progression
+            this lab uses (basic → SYN/version → aggressive → scripts) with live narrated terminal output,
+            which makes the jump from reading flags in a table to actually typing them far less intimidating.
+          </p>
+          <a class="gem-link" href="https://www.youtube.com/@NetworkChuck" target="_blank" rel="noopener">youtube.com/@NetworkChuck ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 TROUBLESHOOTING -->
+    <section class="phase" id="troubleshoot">
+      <div class="phase-head">
+        <span class="phase-num">13</span>
+        <h2>Troubleshooting</h2>
+      </div>
+      <p class="phase-sub">The failure modes that actually happen during this specific lab.</p>
+
+      <details class="trouble" open>
+        <summary>Kali can't reach Metasploitable2 at all (100% packet loss)</summary>
+        <div class="trouble-body">
+          <p>Almost always a network adapter mismatch — both VMs need to be on the <em>same</em> Host-Only or
+          Internal Network, not just "an" internal network. In VirtualBox, check
+          Settings → Network on both VMs and confirm the adapter name matches exactly (e.g. both set to
+          <code class="inline">vboxnet0</code>, or both set to the identical Internal Network name). A
+          one-character mismatch silently puts them on two separate isolated segments.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>nmap reports the host as "down" despite the VM clearly being on and running</summary>
+        <div class="trouble-body">
+          <p>Metasploitable2's firewall/network stack may not respond to the ICMP ping Nmap's host discovery
+          relies on by default. Add <code class="inline">-Pn</code> to skip the alive-check and scan
+          regardless — see Phase 04.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>"sudo: command not found" or permission denied running -sS</summary>
+        <div class="trouble-body">
+          <p>SYN scan needs raw socket access, which requires root. If you're not running as root already on
+          Kali (common on fresh installs that default to a non-root user), prefix with
+          <code class="inline">sudo</code> as shown throughout the lab, or fall back to
+          <code class="inline">-sT</code> (Connect scan) which works without elevated privileges.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>Scan takes far longer than expected</summary>
+        <div class="trouble-body">
+          <p>Default Nmap behavior with no <code class="inline">-p</code> flag scans the top 1000 most common
+          ports, not all 65535 — already reasonably fast. If a scan is dragging, check whether you
+          accidentally added <code class="inline">-p-</code> (all ports) or are scanning a wide CIDR range
+          without intending to; add <code class="inline">-T4</code> and/or narrow the port range with
+          <code class="inline">-p</code> for lab purposes.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>Every port shows as filtered, nothing shows as open</summary>
+        <div class="trouble-body">
+          <p>Check Metasploitable2's own host-based firewall state and confirm the Host-Only/Internal Network
+          adapter is actually active and not still defaulting to NAT (the VirtualBox default for new VMs,
+          easy to forget to change). A consistent "filtered" wall across every port usually means something
+          is intercepting traffic before it reaches the VM at all, rather than the VM's services being
+          genuinely firewalled individually.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- 14 CHEAT SHEET -->
+    <section class="phase" id="cheatsheet">
+      <div class="phase-head">
+        <span class="phase-num">14</span>
+        <h2>Command cheat-sheet</h2>
+      </div>
+      <p class="phase-sub">The whole day, one table.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">nmap &lt;target&gt;</code></td><td>Basic scan — top 1000 ports, no special technique</td></tr>
+            <tr><td><code class="inline">nmap -sS &lt;target&gt;</code></td><td>Stealthier SYN/half-open scan (needs root)</td></tr>
+            <tr><td><code class="inline">nmap -sT &lt;target&gt;</code></td><td>Full TCP connect scan (no root needed)</td></tr>
+            <tr><td><code class="inline">nmap -sV &lt;target&gt;</code></td><td>Service version detection</td></tr>
+            <tr><td><code class="inline">nmap -O &lt;target&gt;</code></td><td>OS detection</td></tr>
+            <tr><td><code class="inline">nmap -A &lt;target&gt;</code></td><td>OS + version + default scripts + traceroute, all at once</td></tr>
+            <tr><td><code class="inline">nmap -p 1-1000 &lt;target&gt;</code></td><td>Scan a specific port range</td></tr>
+            <tr><td><code class="inline">nmap -p- &lt;target&gt;</code></td><td>Scan all 65535 ports</td></tr>
+            <tr><td><code class="inline">nmap --script vuln &lt;target&gt;</code></td><td>Run NSE vulnerability-detection scripts</td></tr>
+            <tr><td><code class="inline">nmap -Pn &lt;target&gt;</code></td><td>Skip host-alive check — scan regardless</td></tr>
+            <tr><td><code class="inline">nmap -T4 &lt;target&gt;</code></td><td>Aggressive timing — faster scans for lab/CTF use</td></tr>
+            <tr><td><code class="inline">nmap -oN file.txt &lt;target&gt;</code></td><td>Save human-readable output to a file</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 15 NEXT STEPS -->
+    <section class="phase" id="nextsteps" style="border-bottom:none;">
+      <div class="phase-head">
+        <span class="phase-num">15</span>
+        <h2>Next steps</h2>
+      </div>
+      <p class="phase-sub">Where today's map gets used.</p>
+
+      <p>
+        You now have a real, documented attack surface for Metasploitable2 — open ports, service versions,
+        and a handful of NSE-flagged potential vulnerabilities. That output is exactly the input the rest of
+        the roadmap builds on: feeding the same target into a full vulnerability scanner like OpenVAS/GVM for
+        deeper, CVE-cross-referenced analysis, or moving directly into manual exploitation of the specific
+        services you just found (that backdoored <code class="inline">vsftpd 2.3.4</code> from Phase 09 is
+        not a coincidence — it's one of the most famous teaching vulnerabilities in this entire VM).
+      </p>
+    </section>
+
+    <footer>
+      <span>Day 11 / 120-day cybersecurity learning roadmap</span>
+      <span>Nmap · VirtualBox · Metasploitable2</span>
+    </footer>
+
+  </main>
+</div>
+
 </body>
 </html>
