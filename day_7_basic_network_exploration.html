@@ -1,357 +1,805 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Day 07: Foundational Mastery - Networking I</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #faf5ff; /* Soft Lavender */
-            --text-main: #4b5563;
-            --text-light: #6b7280;
-            --accent-purple: #a855f7;
-            --accent-peach: #fb923c;
-            --accent-blue: #3b82f6;
-            --accent-pink: #ec4899;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --code-bg: #1f2937;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 07 — OSI Model &amp; Network Exploration</title>
+<style>
+:root{
+  --bg:#0a0f0f;
+  --bg-panel:#0f1716;
+  --bg-panel-raised:#131e1d;
+  --line:#1f2e2c;
+  --line-soft:#16201f;
+  --petrol:#1f8a8a;
+  --petrol-bright:#3fd1c7;
+  --amber:#e8a33d;
+  --text:#cfe3e0;
+  --text-dim:#7c9794;
+  --text-faint:#4c6361;
+  --crit:#d4453a;
+  --high:#e8743d;
+  --med:#e8c23d;
+  --low:#4ea0e0;
+  --log:#5fb88f;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -5%, rgba(31,138,138,0.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(63,209,199,0.05), transparent 55%);
+  color:var(--text); font-family:var(--sans); font-size:15.5px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--petrol-bright); text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--petrol-bright); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #faf5ff 0%, #fff7ed 50%, #eff6ff 100%);
-            color: var(--text-main);
-            margin: 0;
-            padding: 2rem;
-            min-height: 100vh;
-        }
+.shell{display:grid; grid-template-columns: 260px 1fr; max-width:1320px; margin:0 auto;}
+@media (max-width: 900px){
+  .shell{grid-template-columns: 1fr;}
+  .rail{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+}
 
-        .container {
-            max-width: 950px;
-            margin: 0 auto;
-        }
+.rail{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:28px 18px 40px 28px; border-right:1px solid var(--line);}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.rail-brand{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--text-faint); text-transform:uppercase; margin-bottom:4px;}
+.rail-title{font-family:var(--sans); font-weight:700; font-size:18px; color:var(--text); margin:0 0 26px 0; letter-spacing:-0.01em;}
+.rail-title span{color:var(--petrol-bright);}
+.rail nav{display:flex; flex-direction:column; gap:2px;}
+.rail nav a{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); padding:7px 10px; border-radius:5px; display:flex; gap:9px; align-items:baseline;}
+.rail nav a:hover{background:var(--bg-panel-raised); color:var(--petrol-bright); text-decoration:none;}
+.rail nav a .n{color:var(--text-faint); min-width:20px;}
+.rail-meta{margin-top:30px; padding-top:18px; border-top:1px solid var(--line-soft); font-family:var(--mono); font-size:11px; color:var(--text-faint); line-height:1.8;}
+.rail-meta b{color:var(--text-dim); font-weight:600;}
 
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+main{padding:0 0 80px 0; min-width:0;}
 
-        h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(to right, var(--accent-purple), var(--accent-peach));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
+.hero{padding:64px 56px 40px 56px; border-bottom:1px solid var(--line); position:relative;}
+.hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--petrol-bright); display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+.hero-eyebrow::before{content:""; width:8px;height:8px; border-radius:50%; background:var(--log); box-shadow:0 0 0 3px rgba(95,184,143,0.18);}
+.hero h1{font-size:clamp(28px, 4vw, 42px); line-height:1.1; margin:0 0 16px 0; letter-spacing:-0.02em; font-weight:800; max-width:780px;}
+.hero h1 .accent{color:var(--petrol-bright);}
+.hero p.lede{max-width:640px; color:var(--text-dim); font-size:16px; margin:0 0 28px 0;}
+.hero-tags{display:flex; flex-wrap:wrap; gap:8px;}
+.tag{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:5px; color:var(--text-dim); background:var(--bg-panel);}
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            font-weight: 400;
-        }
+.flow-strip{display:flex; align-items:center; gap:0; margin-top:36px; padding:18px 0 4px 0; overflow-x:auto;}
+.flow-node{font-family:var(--mono); font-size:12px; color:var(--text); background:var(--bg-panel); border:1px solid var(--line); border-radius:6px; padding:9px 13px; white-space:nowrap; flex-shrink:0;}
+.flow-node b{color:var(--petrol-bright); display:block; font-size:10px; letter-spacing:0.08em; margin-bottom:3px; text-transform:uppercase; font-weight:600;}
+.flow-arrow{color:var(--text-faint); padding:0 10px; font-size:14px; flex-shrink:0;}
 
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-        }
+section.phase{padding:48px 56px; border-bottom:1px solid var(--line); scroll-margin-top:20px;}
+section.phase:nth-of-type(odd){background:linear-gradient(180deg, rgba(31,138,138,0.025), transparent 200px);}
+.phase-head{display:flex; align-items:baseline; gap:18px; margin-bottom:8px;}
+.phase-num{font-family:var(--mono); font-size:13px; color:var(--petrol-bright); border:1px solid var(--petrol); border-radius:5px; padding:3px 9px; flex-shrink:0;}
+.phase-head h2{font-size:24px; margin:0; font-weight:750; letter-spacing:-0.01em;}
+.phase-sub{color:var(--text-dim); font-size:14.5px; margin:0 0 28px 0; max-width:680px;}
 
-        h2 {
-            color: var(--accent-purple);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px dashed #e5e7eb;
-            padding-bottom: 0.5rem;
-        }
+h3{font-size:16.5px; font-weight:700; margin:32px 0 12px 0; color:var(--text); display:flex; align-items:center; gap:9px;}
+h3 .h3-mark{color:var(--petrol-bright); font-family:var(--mono); font-size:13px;}
+h3:first-of-type{margin-top:8px;}
 
-        h3 {
-            color: var(--accent-blue);
-            margin-top: 1.5rem;
-        }
+p{max-width:760px; margin:0 0 14px 0;}
+ul, ol{max-width:760px; padding-left:22px; margin:0 0 16px 0;}
+li{margin-bottom:7px;}
+strong{color:var(--text); font-weight:650;}
+code.inline{font-family:var(--mono); background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:4px; padding:1.5px 6px; font-size:0.88em; color:var(--petrol-bright);}
 
-        p, li {
-            line-height: 1.7;
-        }
+.term{background:#070b0a; border:1px solid var(--line); border-radius:9px; margin:16px 0 24px 0; max-width:820px; overflow:hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgba(0,0,0,0.6);}
+.term-bar{display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--bg-panel); border-bottom:1px solid var(--line);}
+.term-dot{width:9px; height:9px; border-radius:50%;}
+.term-dot.r{background:#d4453a;}
+.term-dot.y{background:#e8c23d;}
+.term-dot.g{background:#5fb88f;}
+.term-label{font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-left:8px;}
+.term pre{margin:0; padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:#d6ebe7;}
+.term pre::-webkit-scrollbar{height:6px;}
+.term pre::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.term .c{color:var(--text-faint); font-style:italic;}
+.term .out{color:var(--log);}
+.term .prompt{color:var(--petrol-bright);}
+.term .var{color:var(--amber);}
 
-        code {
-            font-family: 'Fira Code', monospace;
-            background: #f3f4f6;
-            color: var(--accent-pink);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
+.callout{border-radius:8px; border:1px solid var(--line); padding:14px 18px; margin:18px 0 22px 0; max-width:760px; font-size:14px;}
+.callout-head{font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
+.callout.note{background:rgba(31,138,138,0.07); border-color:rgba(31,138,138,0.35);}
+.callout.note .callout-head{color:var(--petrol-bright);}
+.callout.warn{background:rgba(232,116,61,0.07); border-color:rgba(232,116,61,0.35);}
+.callout.warn .callout-head{color:var(--high);}
+.callout.danger{background:rgba(212,69,58,0.08); border-color:rgba(212,69,58,0.4);}
+.callout.danger .callout-head{color:var(--crit);}
+.callout.tip{background:rgba(95,184,143,0.07); border-color:rgba(95,184,143,0.35);}
+.callout.tip .callout-head{color:var(--log);}
+.callout p:last-child{margin-bottom:0;}
 
-        .terminal {
-            background: var(--code-bg);
-            color: #e5e7eb;
-            padding: 1.5rem;
-            border-radius: 10px;
-            font-family: 'Fira Code', monospace;
-            overflow-x: auto;
-            margin: 1.5rem 0;
-            border-left: 4px solid var(--accent-peach);
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
-        }
+.gem{border:1px solid rgba(232,163,61,0.4); background:rgba(232,163,61,0.06); border-radius:8px; padding:14px 18px; margin:18px 0 24px 0; max-width:760px; display:flex; gap:14px; align-items:flex-start;}
+.gem-icon{flex-shrink:0; width:30px; height:30px; border-radius:7px; background:rgba(232,163,61,0.15); display:flex; align-items:center; justify-content:center; font-size:14px; margin-top:1px;}
+.gem-body{flex:1; min-width:0;}
+.gem-label{font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber); font-weight:700; margin-bottom:4px;}
+.gem-title{font-weight:650; color:var(--text); font-size:14.5px; margin-bottom:3px;}
+.gem-why{font-size:13px; color:var(--text-dim); margin:0;}
+.gem a.gem-link{font-family:var(--mono); font-size:12.5px; display:inline-flex; align-items:center; gap:5px; margin-top:6px;}
 
-        .terminal .comment { color: #9ca3af; }
-        .terminal .prompt { color: var(--accent-peach); font-weight: bold; }
-        .terminal .output { color: #93c5fd; }
+.table-wrap{overflow-x:auto; margin:16px 0 24px 0; max-width:940px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; padding:10px 14px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:11px 14px; border-bottom:1px solid var(--line-soft); color:var(--text-dim); vertical-align:top;}
+td code.inline{white-space:nowrap;}
+tr:hover td{background:rgba(31,138,138,0.04);}
 
-        .insight-box {
-            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-            border-left: 5px solid var(--accent-purple);
-            padding: 1.5rem;
-            border-radius: 0 12px 12px 0;
-            margin: 2rem 0;
-            color: #5b21b6;
-            font-weight: 500;
-        }
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:900px; margin:18px 0 24px 0;}
+@media (max-width:760px){.grid2{grid-template-columns:1fr;}}
+.card{background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px;}
+.card h4{margin:0 0 8px 0; font-size:14px; color:var(--petrol-bright); font-family:var(--mono);}
+.card p{margin:0; font-size:13.5px; color:var(--text-dim);}
+.card ul{margin:8px 0 0 0; padding-left:18px; font-size:13.5px; color:var(--text-dim);}
+.card li{margin-bottom:4px;}
 
-        /* Interactive OSI Explorer */
-        .osi-container {
-            display: flex;
-            gap: 2rem;
-            margin-top: 2rem;
-            background: #ffffff;
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-        }
+/* OSI <-> TCP/IP mapping visual */
+.model-map{max-width:780px; margin:18px 0 26px 0; border:1px solid var(--line); border-radius:9px; overflow:hidden;}
+.model-row{display:grid; grid-template-columns:140px 1fr 160px; gap:0; align-items:center; border-bottom:1px solid var(--line-soft); background:var(--bg-panel);}
+.model-row:last-child{border-bottom:none;}
+.model-row.header{background:var(--bg-panel-raised);}
+.model-row.header .model-cell{font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-faint); font-weight:700;}
+.model-cell{padding:10px 14px; font-family:var(--mono); font-size:12px; color:var(--text);}
+.model-cell.osi{color:var(--petrol-bright);}
+.model-cell.tcpip{color:var(--amber); text-align:center;}
+.model-merge{grid-row:span 3; display:flex; align-items:center; justify-content:center; background:rgba(232,163,61,0.06);}
 
-        .osi-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            flex: 1;
-        }
+/* OSI explorer widget — ported & restyled */
+.osi-widget{background:var(--bg-panel); border:1px solid var(--line); border-radius:11px; padding:24px; margin:20px 0 26px 0; max-width:940px;}
+.osi-layout{display:flex; gap:20px;}
+@media (max-width:760px){.osi-layout{flex-direction:column;}}
+.osi-stack{display:flex; flex-direction:column; gap:6px; flex:1; min-width:160px;}
+.osi-layer-btn{
+  padding:11px 14px; background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:7px;
+  text-align:left; font-weight:600; font-family:var(--mono); font-size:12.5px; color:var(--text-dim);
+  cursor:pointer; transition:all 0.15s;
+}
+.osi-layer-btn:hover{background:var(--line-soft); color:var(--text); border-color:var(--petrol); transform:translateX(2px);}
+.osi-layer-btn.active{background:var(--petrol); color:#0a0f0f; border-color:var(--petrol-bright);}
+.osi-details{flex:2; background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:8px; padding:18px 20px; min-width:0;}
+.osi-layer-title{font-size:15px; font-weight:700; color:var(--petrol-bright); margin-bottom:8px; font-family:var(--mono);}
+.osi-pdu-badge{display:inline-block; background:var(--amber); color:#0a0f0f; padding:3px 10px; border-radius:14px; font-size:10.5px; font-weight:700; margin-bottom:10px; font-family:var(--mono);}
+.osi-detail-row{margin-bottom:9px; font-size:13.5px; color:var(--text-dim);}
+.osi-detail-row strong{color:var(--text);}
+.osi-soc-box{font-size:13px; color:var(--low); background:rgba(78,160,224,0.08); border:1px solid rgba(78,160,224,0.3); padding:10px 12px; border-radius:6px; margin-top:8px;}
 
-        .osi-layer {
-            padding: 1rem;
-            background: #f8fafc;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-main);
-        }
+.steps{list-style:none; padding:0; max-width:780px; counter-reset:step;}
+.steps > li{counter-increment:step; position:relative; padding-left:38px; margin-bottom:22px;}
+.steps > li::before{content:counter(step); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:6px; background:var(--bg-panel-raised); border:1px solid var(--petrol); color:var(--petrol-bright); font-family:var(--mono); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+.steps > li > strong{display:block; margin-bottom:4px; color:var(--text); font-size:14.5px;}
 
-        .osi-layer:hover {
-            transform: translateX(5px);
-            border-color: var(--accent-purple);
-            background: #faf5ff;
-        }
+.checklist{list-style:none; padding:0; max-width:760px;}
+.checklist li{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line-soft);}
+.checklist li:last-child{border-bottom:none;}
+.checklist .box{flex-shrink:0; width:16px; height:16px; border:1.5px solid var(--petrol); border-radius:3px; margin-top:2px;}
 
-        .osi-layer.active {
-            background: var(--accent-purple);
-            color: white;
-            border-color: var(--accent-purple);
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
-        }
+details.trouble{border:1px solid var(--line); border-radius:7px; margin-bottom:10px; max-width:820px; background:var(--bg-panel); overflow:hidden;}
+details.trouble summary{padding:13px 16px; cursor:pointer; font-family:var(--mono); font-size:13px; color:var(--text); list-style:none; display:flex; align-items:center; gap:10px;}
+details.trouble summary::-webkit-details-marker{display:none;}
+details.trouble summary::before{content:"▸"; color:var(--petrol-bright); transition:transform 0.15s ease; flex-shrink:0;}
+details.trouble[open] summary::before{transform:rotate(90deg);}
+details.trouble .trouble-body{padding:0 16px 16px 16px; border-top:1px solid var(--line-soft); font-size:13.5px; color:var(--text-dim);}
+details.trouble .trouble-body p:first-child{margin-top:14px;}
 
-        .osi-details {
-            flex: 2;
-            background: #fdfaf6;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-peach);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+.deliverables{background:var(--bg-panel); border:1px solid var(--line); border-radius:9px; padding:22px 24px; max-width:760px; margin:18px 0 26px 0;}
+.deliverables h4{margin:0 0 12px 0; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--petrol-bright);}
+.deliverables .file-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-family:var(--mono); font-size:13px; color:var(--text);}
+.deliverables .file-item::before{content:"📄"; font-size:13px; filter:grayscale(1) brightness(1.4);}
 
-        .layer-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--accent-purple);
-            margin-bottom: 0.5rem;
-        }
+footer{padding:40px 56px; font-family:var(--mono); font-size:11.5px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
 
-        .pdu-badge {
-            display: inline-block;
-            background: var(--accent-peach);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-
-        .layer-desc {
-            margin-bottom: 1rem;
-        }
-
-        .layer-soc {
-            font-size: 0.95rem;
-            color: #0369a1;
-            background: #e0f2fe;
-            padding: 1rem;
-            border-radius: 6px;
-        }
-
-        @media (max-width: 768px) {
-            .osi-container {
-                flex-direction: column;
-            }
-        }
-    </style>
+@media (max-width:900px){
+  .hero{padding:40px 24px 32px;}
+  section.phase{padding:36px 24px;}
+  footer{padding:30px 24px;}
+}
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Day 07: Foundational Mastery</h1>
-            <div class="subtitle">Networking Fundamentals I: OSI Model & Network Exploration</div>
-        </header>
+<div class="shell">
 
-        <div class="insight-box">
-            <strong>Industry Insight 💡</strong><br>
-            Before you can analyze an attack, investigate a honeypot alert, or intercept credentials, you must understand exactly how that data moves. Malicious actors hide in the blind spots of network configurations. The OSI model isn't just theory—it is your diagnostic map for isolating where a breach occurred.
-        </div>
+  <aside class="rail">
+    <div class="rail-brand">120-day cybersecurity roadmap // networking fundamentals i</div>
+    <p class="rail-title">Day <span>07</span> — OSI Model</p>
+    <nav>
+      <a href="#overview"><span class="n">00</span> Overview</a>
+      <a href="#osivstcpip"><span class="n">01</span> OSI vs TCP/IP — the mapping nobody draws</a>
+      <a href="#explorer"><span class="n">02</span> Interactive OSI protocol explorer</a>
+      <a href="#ping"><span class="n">03</span> Testing connectivity with ping</a>
+      <a href="#traceroute"><span class="n">04</span> Tracing the route — the TTL trick explained</a>
+      <a href="#ipaddr"><span class="n">05</span> Checking your own interface — ip addr</a>
+      <a href="#ss"><span class="n">06</span> Discovering listening services with ss</a>
+      <a href="#playbook"><span class="n">07</span> Blue team reading of the same tools</a>
+      <a href="#deliverables"><span class="n">08</span> Deliverables</a>
+      <a href="#troubleshoot"><span class="n">09</span> Troubleshooting</a>
+      <a href="#cheatsheet"><span class="n">10</span> Cheat-sheet</a>
+      <a href="#nextsteps"><span class="n">11</span> Next steps</a>
+    </nav>
+    <div class="rail-meta">
+      <div><b>Tools:</b> ping, traceroute, ip, ss</div>
+      <div><b>Est. time:</b> 2.5–3 hrs</div>
+      <div><b>Leads into:</b> Day 08 — Core Protocols</div>
+    </div>
+  </aside>
 
-        <section class="card">
-            <h2>1. The OSI & TCP/IP Models</h2>
-            <p>The <strong>Open Systems Interconnection (OSI)</strong> model breaks network communication down into 7 logical layers. While the real world primarily runs on the simpler 4-layer <strong>TCP/IP model</strong>, cybersecurity professionals use the OSI model as a universal language to describe where attacks happen (e.g., "This is a Layer 7 DDoS attack" vs. "This is a Layer 3 packet spoofing attack").</p>
-            
-            <h3>Interactive OSI Protocol Explorer</h3>
-            <p style="font-size: 0.9rem; color: var(--text-light);">Click on each layer to understand its function, data unit, and how it relates to security operations.</p>
-            
-            <div class="osi-container">
-                <div class="osi-stack" id="osiStack">
-                    <div class="osi-layer" onclick="showLayer(7)">7. Application</div>
-                    <div class="osi-layer" onclick="showLayer(6)">6. Presentation</div>
-                    <div class="osi-layer" onclick="showLayer(5)">5. Session</div>
-                    <div class="osi-layer" onclick="showLayer(4)">4. Transport</div>
-                    <div class="osi-layer" onclick="showLayer(3)">3. Network</div>
-                    <div class="osi-layer" onclick="showLayer(2)">2. Data Link</div>
-                    <div class="osi-layer" onclick="showLayer(1)">1. Physical</div>
-                </div>
-                <div class="osi-details" id="osiDetails">
-                    <div class="layer-title">Select a Layer</div>
-                    <div class="layer-desc">Click any layer on the left to reveal its protocols, data units, and relevance to SOC Analysts.</div>
-                </div>
-            </div>
-        </section>
+  <main>
 
-        <section class="card">
-            <h2>2. Network Exploration & Troubleshooting</h2>
-            <p>A Blue Teamer must be able to quickly assess the health and topology of a network. These native Linux tools are your first line of reconnaissance and troubleshooting.</p>
+    <div class="hero">
+      <div class="hero-eyebrow">day 07 · networking fundamentals i</div>
+      <h1>The OSI Model &amp; <span class="accent">Network Exploration</span></h1>
+      <p class="lede">
+        Before you can analyze an attack, investigate an alert, or intercept credentials, you need to know
+        exactly how data actually moves. The OSI model isn't theory for its own sake — it's the diagnostic
+        map every later "this is a Layer 7 attack" or "Layer 3 spoofing" statement depends on.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">OSI 7 layers</span>
+        <span class="tag">TCP/IP 4 layers</span>
+        <span class="tag">ping / traceroute</span>
+        <span class="tag">ip addr</span>
+        <span class="tag">ss -tulpn</span>
+      </div>
 
-            <h3>Testing Connectivity with <code>ping</code></h3>
-            <p>Uses ICMP (Internet Control Message Protocol) Echo Requests to determine if a host is alive and measure the round-trip time. It operates at <strong>Layer 3</strong>.</p>
-            <div class="terminal">
-                <span class="comment"># Send exactly 3 pings to a Google DNS server</span><br>
-                <span class="prompt">omnisec@soc:~$</span> ping -c 3 8.8.8.8<br>
-                <span class="output">PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.<br>
-64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=14.2 ms<br>
-64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=15.1 ms<br>
-64 bytes from 8.8.8.8: icmp_seq=3 ttl=117 time=14.8 ms</span>
-            </div>
-
-            <h3>Tracing the Route with <code>traceroute</code></h3>
-            <p>Shows the exact path a packet takes across the internet to reach its destination by incrementally increasing the TTL (Time to Live) of packets.</p>
-            <div class="terminal">
-                <span class="comment"># Trace the path to example.com</span><br>
-                <span class="prompt">omnisec@soc:~$</span> traceroute example.com<br>
-                <span class="output">1  router.local (192.168.1.1)  1.123 ms<br>
-2  isp-gateway.net (10.14.2.1)  12.450 ms<br>
-3  core-router-ny.net (203.0.113.5)  25.671 ms</span>
-            </div>
-
-            <h3>Discovering Listening Services with <code>ss</code></h3>
-            <p>The modern, faster replacement for <code>netstat</code>. It dumps socket statistics, allowing you to see exactly which ports are open and listening on your machine. This is critical for finding unauthorized backdoor services.</p>
-            <div class="terminal">
-                <span class="comment"># -t (TCP), -u (UDP), -l (Listening), -p (Show Process), -n (Numeric IPs/Ports)</span><br>
-                <span class="prompt">root@soc:~#</span> ss -tulpn<br>
-                <span class="output">Netid  State   Recv-Q  Send-Q    Local Address:Port    Peer Address:Port<br>
-tcp    LISTEN  0       128             0.0.0.0:22           0.0.0.0:* users:(("sshd",pid=742,fd=3))<br>
-tcp    LISTEN  0       511             0.0.0.0:80           0.0.0.0:* users:(("nginx",pid=815,fd=6))</span>
-            </div>
-            <p><em>Security Context:</em> If you are monitoring a honeypot, running <code>ss -tulpn</code> verifies that your decoy services are properly bound and listening for attacker traffic.</p>
-        </section>
-
+      <div class="flow-strip">
+        <div class="flow-node"><b>01 · model</b>Where in the stack did it happen</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>02 · reach</b>ping — is the host even alive</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>03 · path</b>traceroute — what's between you and it</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>04 · self</b>ip addr — what are you, on the network</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><b>05 · listen</b>ss — what's actually open on this box</div>
+      </div>
     </div>
 
-    <script>
+    <!-- 00 OVERVIEW -->
+    <section class="phase" id="overview">
+      <div class="phase-head">
+        <span class="phase-num">00</span>
+        <h2>Overview</h2>
+      </div>
+      <p class="phase-sub">The OSI model breaks network communication into 7 logical layers — and gives security professionals a shared vocabulary for describing exactly where something happened.</p>
+
+      <p>
+        The real world mostly runs on the simpler 4-layer TCP/IP model, but cybersecurity professionals
+        still reach for the 7-layer OSI model constantly, because it's more granular — "this is a Layer 7
+        DDoS attack" and "this is a Layer 3 packet spoofing attack" describe genuinely different problems
+        requiring different tools, even though both technically happen "on the network." Today builds that
+        layer-by-layer fluency, then immediately grounds it in four real command-line tools you'll use in
+        nearly every lab from here on.
+      </p>
+    </section>
+
+    <!-- 01 OSI VS TCPIP -->
+    <section class="phase" id="osivstcpip">
+      <div class="phase-head">
+        <span class="phase-num">01</span>
+        <h2>OSI vs. TCP/IP — the mapping nobody draws</h2>
+      </div>
+      <p class="phase-sub">Both models describe the same reality at different resolutions. Here's exactly how the 7 collapse into 4.</p>
+
+      <div class="model-map">
+        <div class="model-row header">
+          <div class="model-cell">OSI (7-layer)</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">TCP/IP (4-layer)</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">7 — Application</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">Application</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">6 — Presentation</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">↑ merged ↑</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">5 — Session</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">↑ merged ↑</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">4 — Transport</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">Transport</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">3 — Network</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">Internet</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">2 — Data Link</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">↑ merged ↑</div>
+        </div>
+        <div class="model-row">
+          <div class="model-cell osi">1 — Physical</div>
+          <div class="model-cell"></div>
+          <div class="model-cell tcpip">Link / Network Access</div>
+        </div>
+      </div>
+
+      <p>
+        OSI Layers 5–7 (Session, Presentation, Application) collapse into a single TCP/IP
+        <strong>Application</strong> layer, because in practice real protocols like HTTP and TLS handle
+        session management and data formatting themselves rather than relying on distinct dedicated
+        layers — the separation is conceptually useful but was never strictly implemented that way in real
+        protocol stacks. OSI Layers 1–2 (Physical, Data Link) similarly collapse into TCP/IP's
+        <strong>Link</strong> layer. Layers 3 and 4 map across cleanly 1:1 in both models — Network/Internet
+        and Transport mean the same thing either way.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-head">▸ why both models stay in use side by side</div>
+        <p>
+          TCP/IP is what's actually implemented and running on every real network. OSI is what's taught and
+          discussed, because its finer granularity gives you more precise language — "Layer 5 session
+          hijacking" is more specific and useful in a conversation than "somewhere in the Application layer."
+          You'll use OSI vocabulary constantly in writing and discussion, and think in TCP/IP terms when
+          you're actually looking at a packet capture's protocol stack.
+        </p>
+      </div>
+    </section>
+
+    <!-- 02 EXPLORER -->
+    <section class="phase" id="explorer">
+      <div class="phase-head">
+        <span class="phase-num">02</span>
+        <h2>Interactive OSI protocol explorer</h2>
+      </div>
+      <p class="phase-sub">Click any layer for its function, data unit (PDU), common protocols, and SOC-relevant attack surface.</p>
+
+      <div class="osi-widget">
+        <div class="osi-layout">
+          <div class="osi-stack" id="osiStack">
+            <div class="osi-layer-btn active" onclick="showLayer(7, this)">7 — Application</div>
+            <div class="osi-layer-btn" onclick="showLayer(6, this)">6 — Presentation</div>
+            <div class="osi-layer-btn" onclick="showLayer(5, this)">5 — Session</div>
+            <div class="osi-layer-btn" onclick="showLayer(4, this)">4 — Transport</div>
+            <div class="osi-layer-btn" onclick="showLayer(3, this)">3 — Network</div>
+            <div class="osi-layer-btn" onclick="showLayer(2, this)">2 — Data Link</div>
+            <div class="osi-layer-btn" onclick="showLayer(1, this)">1 — Physical</div>
+          </div>
+          <div class="osi-details" id="osiDetails"></div>
+        </div>
+      </div>
+
+      <script>
         const layerData = {
-            7: {
-                title: "Layer 7: Application",
-                pdu: "Data",
-                desc: "The interface between the network and the software applications. This is where users interact directly with network services.",
-                protocols: "HTTP/HTTPS, FTP, SMTP, DNS, SSH",
-                soc: "🔍 SOC Focus: This is where credential interception, SQL injection, and Cross-Site Scripting (XSS) occur. Logs from Nginx or Apache are analyzed here."
-            },
-            6: {
-                title: "Layer 6: Presentation",
-                pdu: "Data",
-                desc: "Ensures data is in a usable format and handles data encryption, decryption, and compression.",
-                protocols: "SSL/TLS, JPEG, ASCII, JSON",
-                soc: "🔍 SOC Focus: Malware often uses encryption at this layer to hide its payload. SSL stripping attacks manipulate this layer."
-            },
-            5: {
-                title: "Layer 5: Session",
-                pdu: "Data",
-                desc: "Establishes, maintains, and terminates connections (sessions) between local and remote applications.",
-                protocols: "NetBIOS, RPC, SMB",
-                soc: "🔍 SOC Focus: NTLM relaying and session hijacking attacks manipulate the mechanisms established at this layer."
-            },
-            4: {
-                title: "Layer 4: Transport",
-                pdu: "Segment (TCP) / Datagram (UDP)",
-                desc: "Ensures reliable or fast delivery of data. TCP provides guaranteed delivery via the 3-way handshake, while UDP provides fast, connectionless delivery.",
-                protocols: "TCP, UDP",
-                soc: "🔍 SOC Focus: Port scanning (like Nmap stealth scans) and SYN flood DDoS attacks target the TCP handshake process here."
-            },
-            3: {
-                title: "Layer 3: Network",
-                pdu: "Packet",
-                desc: "Responsible for routing data across different networks using logical addresses (IP addresses).",
-                protocols: "IPv4, IPv6, ICMP, IPSec, OSPF",
-                soc: "🔍 SOC Focus: IP spoofing, Ping of Death, and routing table manipulation. Firewalls primarily filter traffic based on rules set at this layer."
-            },
-            2: {
-                title: "Layer 2: Data Link",
-                pdu: "Frame",
-                desc: "Handles node-to-node data transfer within the same local network using physical addresses (MAC addresses).",
-                protocols: "Ethernet, ARP, VLANs (802.1Q)",
-                soc: "🔍 SOC Focus: ARP Spoofing (Man-in-the-Middle) and MAC flooding attacks happen here. Switches operate at this layer."
-            },
-            1: {
-                title: "Layer 1: Physical",
-                pdu: "Bits",
-                desc: "The physical transmission of raw bit streams over a physical medium (cables, radio waves).",
-                protocols: "Ethernet cables (Cat6), Fiber Optics, Wi-Fi Radio Frequencies",
-                soc: "🔍 SOC Focus: Physical wiretapping, rogue Wi-Fi access points, and cutting fiber cables. You can't hack what isn't plugged in!"
-            }
+          7: { title: "Layer 7: Application", pdu: "Data",
+               desc: "The interface between the network and software applications — where users interact directly with network services.",
+               protocols: "HTTP/HTTPS, FTP, SMTP, DNS, SSH",
+               soc: "SOC focus: credential interception, SQL injection, and XSS happen here. Nginx/Apache access logs are analyzed at this layer." },
+          6: { title: "Layer 6: Presentation", pdu: "Data",
+               desc: "Ensures data is in a usable format — handles encryption, decryption, and compression.",
+               protocols: "SSL/TLS, JPEG, ASCII, JSON",
+               soc: "SOC focus: malware often encrypts its payload at this conceptual layer to evade signature detection. SSL-stripping downgrade attacks target this layer's encryption guarantee." },
+          5: { title: "Layer 5: Session", pdu: "Data",
+               desc: "Establishes, maintains, and terminates sessions between local and remote applications.",
+               protocols: "NetBIOS, RPC, SMB",
+               soc: "SOC focus: NTLM relaying and session hijacking attacks manipulate the session-establishment mechanisms that live here." },
+          4: { title: "Layer 4: Transport", pdu: "Segment (TCP) / Datagram (UDP)",
+               desc: "Ensures reliable (TCP, via the 3-way handshake) or fast connectionless (UDP) delivery between hosts.",
+               protocols: "TCP, UDP",
+               soc: "SOC focus: port scanning (Nmap SYN scans) and SYN flood DDoS attacks both directly target the TCP handshake process — see Day 08 for the packet-level mechanics." },
+          3: { title: "Layer 3: Network", pdu: "Packet",
+               desc: "Routes data across different networks using logical addresses (IP addresses).",
+               protocols: "IPv4, IPv6, ICMP, IPSec, OSPF",
+               soc: "SOC focus: IP spoofing, Ping of Death, and routing table manipulation. Firewalls primarily filter on rules set at this layer — see Day 10." },
+          2: { title: "Layer 2: Data Link", pdu: "Frame",
+               desc: "Handles node-to-node transfer within the same local network using physical addresses (MAC addresses).",
+               protocols: "Ethernet, ARP, VLANs (802.1Q)",
+               soc: "SOC focus: ARP spoofing (the classic LAN man-in-the-middle) and MAC flooding attacks happen here. Switches operate at this layer." },
+          1: { title: "Layer 1: Physical", pdu: "Bits",
+               desc: "The physical transmission of raw bit streams over a medium — cables, radio waves, fiber.",
+               protocols: "Ethernet cabling (Cat6), fiber optics, Wi-Fi RF",
+               soc: "SOC focus: physical wiretapping, rogue Wi-Fi access points, and cut fiber cables. Nothing above this layer matters if the physical link itself is compromised or severed." }
         };
 
-        function showLayer(layerNum) {
-            // Update active state on buttons
-            document.querySelectorAll('.osi-layer').forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Update content
-            const data = layerData[layerNum];
-            const detailsDiv = document.getElementById('osiDetails');
-            
-            detailsDiv.innerHTML = `
-                <div class="layer-title">${data.title}</div>
-                <div><span class="pdu-badge">PDU: ${data.pdu}</span></div>
-                <div class="layer-desc"><strong>Function:</strong> ${data.desc}</div>
-                <div class="layer-desc"><strong>Common Protocols:</strong> ${data.protocols}</div>
-                <div class="layer-soc">${data.soc}</div>
-            `;
+        function showLayer(layerNum, btn) {
+          document.querySelectorAll('.osi-layer-btn').forEach(el => el.classList.remove('active'));
+          btn.classList.add('active');
+          const data = layerData[layerNum];
+          const detailsDiv = document.getElementById('osiDetails');
+          detailsDiv.innerHTML = `
+            <div class="osi-layer-title">${data.title}</div>
+            <div class="osi-pdu-badge">PDU: ${data.pdu}</div>
+            <div class="osi-detail-row"><strong>Function:</strong> ${data.desc}</div>
+            <div class="osi-detail-row"><strong>Common protocols:</strong> ${data.protocols}</div>
+            <div class="osi-soc-box">${data.soc}</div>
+          `;
         }
-    </script>
+        window.addEventListener('DOMContentLoaded', () => {
+          showLayer(7, document.querySelector('.osi-layer-btn'));
+        });
+      </script>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ the fastest way to memorize the layer order</div>
+        <p>
+          "<strong>P</strong>lease <strong>D</strong>o <strong>N</strong>ot <strong>T</strong>hrow
+          <strong>S</strong>ausage <strong>P</strong>izza <strong>A</strong>way" — Physical, Data Link,
+          Network, Transport, Session, Presentation, Application, bottom to top. Cheesy, but it sticks, and
+          you'll be saying layer numbers out loud constantly from here on.
+        </p>
+      </div>
+    </section>
+
+    <!-- 03 PING -->
+    <section class="phase" id="ping">
+      <div class="phase-head">
+        <span class="phase-num">03</span>
+        <h2>Testing connectivity with ping</h2>
+      </div>
+      <p class="phase-sub">The single fastest "is anything even there" check — operating at Layer 3.</p>
+
+      <p>
+        <code class="inline">ping</code> uses ICMP Echo Request/Reply messages to determine if a host is
+        alive and measure round-trip time.
+      </p>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># send exactly 3 pings to a Google DNS server</span>
+<span class="prompt">$</span> ping -c 3 <span class="var">8.8.8.8</span>
+
+<span class="out">PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=14.2 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=15.1 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=117 time=14.8 ms</span></pre>
+      </div>
+
+      <p>Three fields worth reading deliberately, not just glancing past:</p>
+      <ul>
+        <li><strong><code class="inline">icmp_seq</code></strong> — sequence number, lets you spot dropped or out-of-order replies across a longer run</li>
+        <li><strong><code class="inline">ttl</code></strong> — how many router hops were left when the reply arrived; this is exactly the field <code class="inline">traceroute</code> exploits deliberately in Phase 04</li>
+        <li><strong><code class="inline">time</code></strong> — round-trip latency in milliseconds; consistently high or wildly varying values suggest congestion or an unusual routing path</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ "no reply" doesn't always mean "host is down"</div>
+        <p>
+          Many hosts and firewalls deliberately block or rate-limit ICMP — a non-responding ping does not
+          reliably prove a host is offline, only that ICMP isn't getting through. This is exactly the same
+          caveat behind Nmap's <code class="inline">-Pn</code> flag from Day 11 — don't treat ping silence as
+          definitive.
+        </p>
+      </div>
+    </section>
+
+    <!-- 04 TRACEROUTE -->
+    <section class="phase" id="traceroute">
+      <div class="phase-head">
+        <span class="phase-num">04</span>
+        <h2>Tracing the route — the TTL trick explained</h2>
+      </div>
+      <p class="phase-sub">traceroute doesn't have any special access to routing tables — it just exploits one IP header field cleverly.</p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="prompt">$</span> traceroute <span class="var">example.com</span>
+
+<span class="out">1  router.local (192.168.1.1)  1.123 ms
+2  isp-gateway.net (10.14.2.1)  12.450 ms
+3  core-router-ny.net (203.0.113.5)  25.671 ms</span></pre>
+      </div>
+
+      <p>
+        Every IP packet carries a TTL (Time To Live) field — a countdown that every router along the path
+        decrements by 1. When a router decrements TTL to 0, it discards the packet and sends back an ICMP
+        "Time Exceeded" message to the sender, identifying itself in the process.
+      </p>
+
+      <ol class="steps">
+        <li><strong>traceroute sends a packet with TTL = 1</strong>
+          The very first router on the path decrements it to 0, discards the packet, and replies with Time
+          Exceeded — revealing hop #1's identity.
+        </li>
+        <li><strong>Then sends a packet with TTL = 2</strong>
+          This one survives the first router (TTL drops to 1, still alive) but dies at the second router —
+          revealing hop #2.
+        </li>
+        <li><strong>Repeats with TTL = 3, 4, 5...</strong>
+          Each successive packet survives one more hop before expiring, peeling back the path one router at
+          a time until a packet finally reaches the actual destination and gets a normal reply instead of a
+          Time Exceeded message.
+        </li>
+      </ol>
+
+      <div class="callout note">
+        <div class="callout-head">▸ this is the same TTL field you saw in the ping output</div>
+        <p>
+          Phase 03's <code class="inline">ping</code> output showed <code class="inline">ttl=117</code> on
+          the reply — that's the <em>remaining</em> TTL the packet had left when it reached you, after
+          counting down from whatever value the sender started with (commonly 64, 128, or 255 depending on
+          OS). traceroute simply runs that same mechanic in reverse and deliberately, forcing each hop to
+          reveal itself one at a time instead of only seeing the final remaining count.
+        </p>
+      </div>
+
+      <div class="gem">
+        <div class="gem-icon">📄</div>
+        <div class="gem-body">
+          <div class="gem-label">reference — traceroute, mechanically</div>
+          <div class="gem-title">Cloudflare Learning Center — "What is MTR (My Traceroute)?"</div>
+          <p class="gem-why">
+            Covers the same TTL-expiry, hop-by-hop mechanic above in more depth, including why some hops
+            show up as <code class="inline">* * *</code> (routers rate-limiting or ignoring Time Exceeded
+            replies) — a detail worth knowing before you run this against a real target and get confused by
+            gaps. MTR itself is a useful next tool once plain traceroute feels too static.
+          </p>
+          <a class="gem-link" href="https://www.cloudflare.com/learning/network-layer/what-is-mtr/" target="_blank" rel="noopener">cloudflare.com — What is MTR? ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 IP ADDR -->
+    <section class="phase" id="ipaddr">
+      <div class="phase-head">
+        <span class="phase-num">05</span>
+        <h2>Checking your own interface — ip addr</h2>
+      </div>
+      <p class="phase-sub">Before asking what's out there, confirm what you actually are on the network — the natural companion to ping and traceroute that the basics often skip.</p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="prompt">$</span> ip addr
+
+<span class="out">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500
+    link/ether 08:00:27:4a:1b:9c brd ff:ff:ff:ff:ff:ff
+    inet 192.168.56.101/24 brd 192.168.56.255 scope global eth0</span></pre>
+      </div>
+
+      <p>
+        <code class="inline">ip addr</code> (often shortened to <code class="inline">ip a</code>) is the
+        modern replacement for the older <code class="inline">ifconfig</code>, and shows exactly the two
+        pieces of identity that map straight onto Phase 02's layers: the
+        <code class="inline">link/ether</code> MAC address (Layer 2) and the
+        <code class="inline">inet</code> IP address with its subnet mask (Layer 3) — confirming both in one
+        command before you start troubleshooting anything further up the stack.
+      </p>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ why this is the right first step, not an afterthought</div>
+        <p>
+          If a ping or scan against a target fails, the very first thing worth ruling out is whether your
+          own interface even has the IP/subnet you think it does — a misconfigured or missing address on
+          your own box produces symptoms that look identical to "the target is unreachable" but have nothing
+          to do with the target at all. Day 11's Nmap-vs-Metasploitable2 troubleshooting traced exactly this
+          kind of mismatch back to a network adapter misconfiguration.
+        </p>
+      </div>
+    </section>
+
+    <!-- 06 SS -->
+    <section class="phase" id="ss">
+      <div class="phase-head">
+        <span class="phase-num">06</span>
+        <h2>Discovering listening services with ss</h2>
+      </div>
+      <p class="phase-sub">The modern, faster replacement for netstat — and the fastest way to answer "what's actually listening on this box right now."</p>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># -t TCP, -u UDP, -l Listening, -p show Process, -n Numeric ports/IPs</span>
+<span class="prompt">$</span> ss -tulpn
+
+<span class="out">Netid  State   Recv-Q  Send-Q    Local Address:Port    Peer Address:Port
+tcp    LISTEN  0       128             0.0.0.0:22           0.0.0.0:* users:(("sshd",pid=742,fd=3))
+tcp    LISTEN  0       511             0.0.0.0:80           0.0.0.0:* users:(("nginx",pid=815,fd=6))</span></pre>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>What each flag actually filters</h4>
+          <ul>
+            <li><code class="inline">-t</code> — TCP sockets only</li>
+            <li><code class="inline">-u</code> — UDP sockets only (add alongside <code class="inline">-t</code> to see both)</li>
+            <li><code class="inline">-l</code> — listening sockets only, not active connections</li>
+            <li><code class="inline">-p</code> — show the owning process name and PID (needs root for full visibility)</li>
+            <li><code class="inline">-n</code> — numeric output, skips slow reverse-DNS/service-name lookups</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Reading the Local Address column</h4>
+          <p><code class="inline">0.0.0.0:22</code> means the service listens on <em>every</em> interface,
+          reachable from anywhere that can route to this host. <code class="inline">127.0.0.1:&lt;port&gt;</code>
+          would mean loopback-only — unreachable from the network at all, a meaningfully smaller exposure.</p>
+        </div>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ what you're actually hunting for in this output</div>
+        <p>
+          Two scenarios matter most: (1) a service bound to <code class="inline">0.0.0.0</code> that should
+          only ever be reachable locally or from a specific internal subnet — an unintentionally exposed
+          database or admin panel; (2) a process name or port you simply don't recognize at all — every line
+          in this output should be explainable. An unfamiliar PID holding an open listening socket is one of
+          the more reliable signs of an unauthorized backdoor or implant, precisely because malware has to
+          listen somewhere if it wants to receive commands.
+        </p>
+      </div>
+
+      <p>
+        If you're monitoring a honeypot, running <code class="inline">ss -tulpn</code> confirms your decoy
+        services are correctly bound and listening for attacker traffic before you trust any alert it
+        generates — an alert from a service that was never actually listening is a configuration bug, not a
+        real detection.
+      </p>
+    </section>
+
+    <!-- 07 PLAYBOOK -->
+    <section class="phase" id="playbook">
+      <div class="phase-head">
+        <span class="phase-num">07</span>
+        <h2>Blue team reading of the same four tools</h2>
+      </div>
+      <p class="phase-sub">Tying today's commands directly to the OSI layers they each operate at.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th>OSI layer</th><th>Blue-team question it answers</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">ping</code></td><td>3 — Network</td><td>Is this host reachable at all, and how's the latency?</td></tr>
+            <tr><td><code class="inline">traceroute</code></td><td>3 — Network</td><td>What's the actual path, and where along it does something go wrong?</td></tr>
+            <tr><td><code class="inline">ip addr</code></td><td>2 / 3 — Data Link / Network</td><td>What am I, identity-wise, on this network right now?</td></tr>
+            <tr><td><code class="inline">ss -tulpn</code></td><td>4 — Transport</td><td>What's actually listening on this box, and is all of it explainable?</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ the diagnostic order this naturally suggests</div>
+        <p>
+          When something's wrong, work bottom-up exactly like the OSI model itself: confirm your own
+          interface first (<code class="inline">ip addr</code>), then reachability
+          (<code class="inline">ping</code>), then the path if reachability fails
+          (<code class="inline">traceroute</code>), then — once you're investigating a specific host rather
+          than connectivity in general — what's actually listening there
+          (<code class="inline">ss</code>). This order isn't arbitrary; it mirrors which layer each tool
+          operates at, lowest first.
+        </p>
+      </div>
+    </section>
+
+    <!-- 08 DELIVERABLES -->
+    <section class="phase" id="deliverables">
+      <div class="phase-head">
+        <span class="phase-num">08</span>
+        <h2>Deliverables</h2>
+      </div>
+      <p class="phase-sub">Run all four tools yourself before moving on.</p>
+
+      <div class="deliverables">
+        <h4>Suggested files for today</h4>
+        <div class="file-item">day07_ping_traceroute_output.txt</div>
+        <div class="file-item">day07_ip_addr_output.txt</div>
+        <div class="file-item">day07_ss_tulpn_output.txt</div>
+        <div class="file-item">day07_osi_notes.md</div>
+      </div>
+
+      <p>In <code class="inline">day07_osi_notes.md</code>, capture at minimum:</p>
+      <ul class="checklist">
+        <li><span class="box"></span><span>One sentence per OSI layer, in your own words, on what it does and one SOC-relevant attack that targets it</span></li>
+        <li><span class="box"></span><span>Your own machine's MAC and IP address, pulled from real <code class="inline">ip addr</code> output</span></li>
+        <li><span class="box"></span><span>The hop count and any unusually high-latency hop from a real <code class="inline">traceroute</code> run to a site of your choice</span></li>
+        <li><span class="box"></span><span>A list of every listening service <code class="inline">ss -tulpn</code> found on your own machine, with a note on whether you recognize and expect each one</span></li>
+      </ul>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">git</span></div>
+        <pre><span class="prompt">$</span> git add day07_*.txt day07_osi_notes.md
+<span class="prompt">$</span> git commit -m <span class="var">"Day 07: OSI model fundamentals and network exploration"</span>
+<span class="prompt">$</span> git push</pre>
+      </div>
+    </section>
+
+    <!-- 09 TROUBLESHOOTING -->
+    <section class="phase" id="troubleshoot">
+      <div class="phase-head">
+        <span class="phase-num">09</span>
+        <h2>Troubleshooting</h2>
+      </div>
+      <p class="phase-sub">What actually goes wrong running these four commands.</p>
+
+      <details class="trouble" open>
+        <summary>ping shows "Destination Host Unreachable" or 100% packet loss</summary>
+        <div class="trouble-body">
+          <p>Check <code class="inline">ip addr</code> first (Phase 05) — confirm your own interface has a
+          valid IP and is actually up. If your own config looks correct, the target may simply be blocking
+          ICMP rather than being genuinely offline; see the warning callout in Phase 03.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>traceroute: command not found</summary>
+        <div class="trouble-body">
+          <p>On Debian/Ubuntu/Kali: <code class="inline">sudo apt install traceroute -y</code>. Some minimal
+          containers and distros ship only <code class="inline">tracepath</code> or expect
+          <code class="inline">mtr</code> instead — both achieve a similar result with slightly different
+          output formatting.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>traceroute output shows several lines of "* * *" instead of hop details</summary>
+        <div class="trouble-body">
+          <p>Expected and common — some routers along the path are configured not to send back ICMP Time
+          Exceeded replies, or rate-limit them so heavily that traceroute's default timeout gives up before
+          a reply arrives. This doesn't mean the path is broken, only that those specific hops chose not to
+          identify themselves; the trace typically continues past them to later hops that do reply.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>ss -tulpn doesn't show the process name/PID, just a dash</summary>
+        <div class="trouble-body">
+          <p>Process name resolution for <code class="inline">-p</code> requires root privileges to read
+          other users' process information — re-run with <code class="inline">sudo ss -tulpn</code> if
+          you're not already root.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- 10 CHEAT SHEET -->
+    <section class="phase" id="cheatsheet">
+      <div class="phase-head">
+        <span class="phase-num">10</span>
+        <h2>Cheat-sheet</h2>
+      </div>
+      <p class="phase-sub">The whole day, one table.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">ping -c 3 &lt;host&gt;</code></td><td>Send 3 ICMP echoes, check reachability and latency</td></tr>
+            <tr><td><code class="inline">traceroute &lt;host&gt;</code></td><td>Reveal the hop-by-hop path using incrementing TTL</td></tr>
+            <tr><td><code class="inline">ip addr</code> / <code class="inline">ip a</code></td><td>Show your own MAC and IP address per interface</td></tr>
+            <tr><td><code class="inline">ss -tulpn</code></td><td>List all listening TCP/UDP sockets with owning process</td></tr>
+            <tr><td><code class="inline">ss -tulpn \| grep LISTEN</code></td><td>Same, filtered to just the listening lines</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 11 NEXT STEPS -->
+    <section class="phase" id="nextsteps" style="border-bottom:none;">
+      <div class="phase-head">
+        <span class="phase-num">11</span>
+        <h2>Next steps</h2>
+      </div>
+      <p class="phase-sub">Where today's map gets used immediately.</p>
+
+      <p>
+        Day 08 picks up exactly where the Layer 4 entry in today's OSI explorer left off — TCP vs UDP, and
+        precisely how each gets weaponized (SYN floods, UDP amplification). The
+        <code class="inline">ss -tulpn</code> habit from today becomes a recurring checkpoint throughout the
+        rest of the roadmap: every time you stand up a new service, lab target, or honeypot, this is the
+        command that confirms it's actually listening the way you intended before you trust anything that
+        happens to it next.
+      </p>
+    </section>
+
+    <footer>
+      <span>Day 07 / 120-day cybersecurity learning roadmap</span>
+      <span>OSI Model · ping · traceroute · ip · ss</span>
+    </footer>
+
+  </main>
+</div>
+
 </body>
 </html>
