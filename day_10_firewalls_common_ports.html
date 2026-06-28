@@ -1,417 +1,902 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Day 10: Networking Fundamentals IV – Firewalls & Common Ports</title>
-    <style>
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #2c3e50;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 960px;
-            margin: 40px auto;
-            padding: 40px;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        header {
-            border-bottom: 3px solid #2c3e50;
-            padding-bottom: 20px;
-            margin-bottom: 40px;
-        }
-        .roadmap-badge {
-            background-color: #e67e22;
-            color: white;
-            padding: 4px 10px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        h1 {
-            font-size: 2.2rem;
-            color: #2c3e50;
-            margin: 0 0 10px 0;
-        }
-        .subtitle {
-            font-size: 1.1rem;
-            color: #7f8c8d;
-            margin: 0;
-        }
-        h2 {
-            font-size: 1.5rem;
-            color: #2980b9;
-            border-left: 5px solid #2980b9;
-            padding-left: 12px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-        }
-        h3 {
-            font-size: 1.2rem;
-            color: #34495e;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        p {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            text-align: justify;
-        }
-        ul, ol {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            padding-left: 25px;
-        }
-        li {
-            margin-bottom: 0.5rem;
-        }
-        .code-box {
-            background-color: #2f3640;
-            font-family: "Courier New", Courier, monospace;
-            padding: 16px;
-            margin: 15px 0;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            color: #f5f6fa;
-            overflow-x: auto;
-        }
-        .code-box span.comment {
-            color: #7f8c8d;
-        }
-        .step-card {
-            background-color: #fafbfc;
-            border: 1px solid #e1e4e8;
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .step-card h4 {
-            margin-top: 0;
-            color: #2c3e50;
-            font-size: 1.05rem;
-            border-bottom: 1px solid #e1e4e8;
-            padding-bottom: 8px;
-        }
-        .matrix-box {
-            background-color: #e8f8f5;
-            border-left: 4px solid #2ecc71;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 0 4px 4px 0;
-        }
-        .matrix-box h4 {
-            margin-top: 0;
-            color: #117a65;
-        }
-        code {
-            background-color: #f1f2f6;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: "Courier New", Courier, monospace;
-            font-size: 0.9rem;
-            color: #c23616;
-        }
-        .port-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 0.95rem;
-        }
-        .port-table th, .port-table td {
-            border: 1px solid #dcdde1;
-            padding: 12px;
-            text-align: left;
-            vertical-align: top;
-        }
-        .port-table th {
-            background-color: #f5f6fa;
-            color: #2c3e50;
-        }
-        .port-table tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        .fw-diagram {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #eef2f7;
-            padding: 20px;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-family: sans-serif;
-            font-size: 0.85rem;
-            font-weight: bold;
-            text-align: center;
-        }
-        .fw-node {
-            background: #34495e;
-            color: white;
-            padding: 15px;
-            border-radius: 4px;
-            width: 25%;
-        }
-        .fw-barrier {
-            background: #e74c3c;
-            color: white;
-            padding: 20px 10px;
-            border-radius: 4px;
-            width: 35%;
-            position: relative;
-        }
-        .fw-barrier::before {
-            content: "🔥 RULES ENFORCED";
-            display: block;
-            font-size: 0.7rem;
-            margin-top: 5px;
-            color: #f9ebea;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 10 — Firewalls &amp; Common Ports: Architecture, Ports, Scanning &amp; UFW</title>
+<style>
+:root{
+  --bg:#0a0f0f;
+  --bg-panel:#0f1716;
+  --bg-panel-raised:#131e1d;
+  --line:#1f2e2c;
+  --line-soft:#16201f;
+  --petrol:#1f8a8a;
+  --petrol-bright:#3fd1c7;
+  --amber:#e8a33d;
+  --text:#cfe3e0;
+  --text-dim:#7c9794;
+  --text-faint:#4c6361;
+  --crit:#d4453a;
+  --high:#e8743d;
+  --med:#e8c23d;
+  --low:#4ea0e0;
+  --log:#5fb88f;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -5%, rgba(31,138,138,0.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(63,209,199,0.05), transparent 55%);
+  color:var(--text); font-family:var(--sans); font-size:15.5px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--petrol-bright); text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--petrol-bright); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+
+.shell{display:grid; grid-template-columns: 260px 1fr; max-width:1320px; margin:0 auto;}
+@media (max-width: 900px){
+  .shell{grid-template-columns: 1fr;}
+  .rail{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+}
+
+.rail{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:28px 18px 40px 28px; border-right:1px solid var(--line);}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.rail-brand{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--text-faint); text-transform:uppercase; margin-bottom:4px;}
+.rail-title{font-family:var(--sans); font-weight:700; font-size:18px; color:var(--text); margin:0 0 26px 0; letter-spacing:-0.01em;}
+.rail-title span{color:var(--petrol-bright);}
+.rail nav{display:flex; flex-direction:column; gap:2px;}
+.rail nav a{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); padding:7px 10px; border-radius:5px; display:flex; gap:9px; align-items:baseline;}
+.rail nav a:hover{background:var(--bg-panel-raised); color:var(--petrol-bright); text-decoration:none;}
+.rail nav a .n{color:var(--text-faint); min-width:20px;}
+.rail-meta{margin-top:30px; padding-top:18px; border-top:1px solid var(--line-soft); font-family:var(--mono); font-size:11px; color:var(--text-faint); line-height:1.8;}
+.rail-meta b{color:var(--text-dim); font-weight:600;}
+
+main{padding:0 0 80px 0; min-width:0;}
+
+.hero{padding:64px 56px 40px 56px; border-bottom:1px solid var(--line); position:relative;}
+.hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--petrol-bright); display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+.hero-eyebrow::before{content:""; width:8px;height:8px; border-radius:50%; background:var(--log); box-shadow:0 0 0 3px rgba(95,184,143,0.18);}
+.hero h1{font-size:clamp(28px, 4vw, 42px); line-height:1.1; margin:0 0 16px 0; letter-spacing:-0.02em; font-weight:800; max-width:780px;}
+.hero h1 .accent{color:var(--petrol-bright);}
+.hero p.lede{max-width:640px; color:var(--text-dim); font-size:16px; margin:0 0 28px 0;}
+.hero-tags{display:flex; flex-wrap:wrap; gap:8px;}
+.tag{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:5px; color:var(--text-dim); background:var(--bg-panel);}
+
+.flow-strip{display:flex; align-items:center; gap:0; margin-top:36px; padding:18px 0 4px 0; overflow-x:auto;}
+.flow-node{font-family:var(--mono); font-size:12px; color:var(--text); background:var(--bg-panel); border:1px solid var(--line); border-radius:6px; padding:9px 13px; white-space:nowrap; flex-shrink:0;}
+.flow-node b{color:var(--petrol-bright); display:block; font-size:10px; letter-spacing:0.08em; margin-bottom:3px; text-transform:uppercase; font-weight:600;}
+.flow-arrow{color:var(--text-faint); padding:0 10px; font-size:14px; flex-shrink:0;}
+
+section.phase{padding:48px 56px; border-bottom:1px solid var(--line); scroll-margin-top:20px;}
+section.phase:nth-of-type(odd){background:linear-gradient(180deg, rgba(31,138,138,0.025), transparent 200px);}
+.phase-head{display:flex; align-items:baseline; gap:18px; margin-bottom:8px;}
+.phase-num{font-family:var(--mono); font-size:13px; color:var(--petrol-bright); border:1px solid var(--petrol); border-radius:5px; padding:3px 9px; flex-shrink:0;}
+.phase-head h2{font-size:24px; margin:0; font-weight:750; letter-spacing:-0.01em;}
+.phase-sub{color:var(--text-dim); font-size:14.5px; margin:0 0 28px 0; max-width:680px;}
+
+h3{font-size:16.5px; font-weight:700; margin:32px 0 12px 0; color:var(--text); display:flex; align-items:center; gap:9px;}
+h3 .h3-mark{color:var(--petrol-bright); font-family:var(--mono); font-size:13px;}
+h3:first-of-type{margin-top:8px;}
+
+p{max-width:760px; margin:0 0 14px 0;}
+ul, ol{max-width:760px; padding-left:22px; margin:0 0 16px 0;}
+li{margin-bottom:7px;}
+strong{color:var(--text); font-weight:650;}
+code.inline{font-family:var(--mono); background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:4px; padding:1.5px 6px; font-size:0.88em; color:var(--petrol-bright);}
+
+.term{background:#070b0a; border:1px solid var(--line); border-radius:9px; margin:16px 0 24px 0; max-width:820px; overflow:hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgba(0,0,0,0.6);}
+.term-bar{display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--bg-panel); border-bottom:1px solid var(--line);}
+.term-dot{width:9px; height:9px; border-radius:50%;}
+.term-dot.r{background:#d4453a;}
+.term-dot.y{background:#e8c23d;}
+.term-dot.g{background:#5fb88f;}
+.term-label{font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-left:8px;}
+.term pre{margin:0; padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:#d6ebe7;}
+.term pre::-webkit-scrollbar{height:6px;}
+.term pre::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+.term .c{color:var(--text-faint); font-style:italic;}
+.term .out{color:var(--log);}
+.term .prompt{color:var(--petrol-bright);}
+.term .var{color:var(--amber);}
+
+.callout{border-radius:8px; border:1px solid var(--line); padding:14px 18px; margin:18px 0 22px 0; max-width:760px; font-size:14px;}
+.callout-head{font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
+.callout.note{background:rgba(31,138,138,0.07); border-color:rgba(31,138,138,0.35);}
+.callout.note .callout-head{color:var(--petrol-bright);}
+.callout.warn{background:rgba(232,116,61,0.07); border-color:rgba(232,116,61,0.35);}
+.callout.warn .callout-head{color:var(--high);}
+.callout.danger{background:rgba(212,69,58,0.08); border-color:rgba(212,69,58,0.4);}
+.callout.danger .callout-head{color:var(--crit);}
+.callout.tip{background:rgba(95,184,143,0.07); border-color:rgba(95,184,143,0.35);}
+.callout.tip .callout-head{color:var(--log);}
+.callout.fix{background:rgba(78,160,224,0.07); border-color:rgba(78,160,224,0.35);}
+.callout.fix .callout-head{color:var(--low);}
+.callout p:last-child{margin-bottom:0;}
+
+/* gem / article reference block */
+.gem{border:1px solid rgba(232,163,61,0.4); background:rgba(232,163,61,0.06); border-radius:8px; padding:14px 18px; margin:18px 0 24px 0; max-width:760px; display:flex; gap:14px; align-items:flex-start;}
+.gem-icon{flex-shrink:0; width:30px; height:30px; border-radius:7px; background:rgba(232,163,61,0.15); display:flex; align-items:center; justify-content:center; font-size:14px; margin-top:1px;}
+.gem-body{flex:1; min-width:0;}
+.gem-label{font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber); font-weight:700; margin-bottom:4px;}
+.gem-title{font-weight:650; color:var(--text); font-size:14.5px; margin-bottom:3px;}
+.gem-why{font-size:13px; color:var(--text-dim); margin:0;}
+.gem a.gem-link{font-family:var(--mono); font-size:12.5px; display:inline-flex; align-items:center; gap:5px; margin-top:6px;}
+
+.table-wrap{overflow-x:auto; margin:16px 0 24px 0; max-width:940px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; padding:10px 14px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:11px 14px; border-bottom:1px solid var(--line-soft); color:var(--text-dim); vertical-align:top;}
+td code.inline{white-space:nowrap;}
+tr:hover td{background:rgba(31,138,138,0.04);}
+
+.pill{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; font-weight:700; padding:3px 9px; border-radius:4px; white-space:nowrap;}
+.pill::before{content:""; width:7px; height:7px; border-radius:50%;}
+.pill.crit{color:var(--crit); background:rgba(212,69,58,0.12);}
+.pill.crit::before{background:var(--crit);}
+.pill.high{color:var(--high); background:rgba(232,116,61,0.12);}
+.pill.high::before{background:var(--high);}
+.pill.med{color:var(--med); background:rgba(232,194,61,0.12);}
+.pill.med::before{background:var(--med);}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:900px; margin:18px 0 24px 0;}
+@media (max-width:760px){.grid2{grid-template-columns:1fr;}}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; max-width:940px; margin:18px 0 24px 0;}
+@media (max-width:760px){.grid3{grid-template-columns:1fr;}}
+.card{background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px;}
+.card h4{margin:0 0 8px 0; font-size:14px; color:var(--petrol-bright); font-family:var(--mono);}
+.card p{margin:0; font-size:13.5px; color:var(--text-dim);}
+.card ul{margin:8px 0 0 0; padding-left:18px; font-size:13.5px; color:var(--text-dim);}
+.card li{margin-bottom:4px;}
+
+/* OSI layer stack visual */
+.osi-stack{max-width:520px; margin:18px 0 26px 0; border:1px solid var(--line); border-radius:9px; overflow:hidden;}
+.osi-row{display:grid; grid-template-columns:34px 1fr 110px; gap:0; align-items:center; border-bottom:1px solid var(--line-soft); background:var(--bg-panel);}
+.osi-row:last-child{border-bottom:none;}
+.osi-num{font-family:var(--mono); font-size:11px; color:var(--text-faint); text-align:center; padding:10px 0;}
+.osi-name{font-family:var(--mono); font-size:12.5px; color:var(--text); padding:10px 6px;}
+.osi-cov{font-family:var(--mono); font-size:10.5px; text-align:center; padding:10px 6px; font-weight:700;}
+.osi-row.l7 .osi-cov{color:var(--petrol-bright);}
+.osi-row.l4 .osi-cov, .osi-row.l3 .osi-cov{color:var(--med);}
+.osi-row.dim{opacity:0.45;}
+.osi-row.cov-ngfw{background:rgba(31,138,138,0.08);}
+.osi-row.cov-stateful{background:rgba(232,194,61,0.06);}
+.osi-row.cov-stateless{background:rgba(232,194,61,0.06);}
+
+.fw-flow{display:flex; align-items:center; gap:0; margin:18px 0 26px 0; max-width:780px; overflow-x:auto;}
+.fw-stage{font-family:var(--mono); font-size:12px; background:var(--bg-panel); border:1px solid var(--line); border-radius:7px; padding:12px 16px; text-align:center; flex-shrink:0;}
+.fw-stage.attacker{border-color:rgba(212,69,58,0.4); color:var(--crit);}
+.fw-stage.barrier{border-color:rgba(232,163,61,0.5); color:var(--amber); background:rgba(232,163,61,0.08);}
+.fw-stage.trusted{border-color:rgba(95,184,143,0.4); color:var(--log);}
+.fw-stage small{display:block; color:var(--text-faint); font-size:10px; margin-top:3px;}
+.fw-flow-arrow{color:var(--text-faint); padding:0 8px; flex-shrink:0;}
+
+.checklist{list-style:none; padding:0; max-width:760px;}
+.checklist li{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line-soft);}
+.checklist li:last-child{border-bottom:none;}
+.checklist .box{flex-shrink:0; width:16px; height:16px; border:1.5px solid var(--petrol); border-radius:3px; margin-top:2px;}
+
+.steps{list-style:none; padding:0; max-width:780px; counter-reset:step;}
+.steps > li{counter-increment:step; position:relative; padding-left:38px; margin-bottom:22px;}
+.steps > li::before{content:counter(step); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:6px; background:var(--bg-panel-raised); border:1px solid var(--petrol); color:var(--petrol-bright); font-family:var(--mono); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+.steps > li > strong{display:block; margin-bottom:4px; color:var(--text); font-size:14.5px;}
+
+details.trouble{border:1px solid var(--line); border-radius:7px; margin-bottom:10px; max-width:820px; background:var(--bg-panel); overflow:hidden;}
+details.trouble summary{padding:13px 16px; cursor:pointer; font-family:var(--mono); font-size:13px; color:var(--text); list-style:none; display:flex; align-items:center; gap:10px;}
+details.trouble summary::-webkit-details-marker{display:none;}
+details.trouble summary::before{content:"▸"; color:var(--petrol-bright); transition:transform 0.15s ease; flex-shrink:0;}
+details.trouble[open] summary::before{transform:rotate(90deg);}
+details.trouble .trouble-body{padding:0 16px 16px 16px; border-top:1px solid var(--line-soft); font-size:13.5px; color:var(--text-dim);}
+details.trouble .trouble-body p:first-child{margin-top:14px;}
+
+.deliverables{background:var(--bg-panel); border:1px solid var(--line); border-radius:9px; padding:22px 24px; max-width:760px; margin:18px 0 26px 0;}
+.deliverables h4{margin:0 0 12px 0; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--petrol-bright);}
+.deliverables .file-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-family:var(--mono); font-size:13px; color:var(--text);}
+.deliverables .file-item::before{content:"📄"; font-size:13px; filter:grayscale(1) brightness(1.4);}
+
+footer{padding:40px 56px; font-family:var(--mono); font-size:11.5px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+@media (max-width:900px){
+  .hero{padding:40px 24px 32px;}
+  section.phase{padding:36px 24px;}
+  footer{padding:30px 24px;}
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <span class="roadmap-badge">Day 10 of 120</span>
-        <h1>Networking Fundamentals IV – Firewalls & Common Ports</h1>
-        <p class="subtitle">An In-Depth Blueprint for Attack Surface Management, Packet Filtering Architecture, and System Hardening</p>
-    </header>
+<div class="shell">
 
-    <h2>1. Firewall Architectural Deep Dive</h2>
-    <p>
-        A firewall is a network security architectural mechanism designed to enforce trust boundaries by controlling the ingress (incoming) and egress (outgoing) traffic profiles of systems. Firewalls function by examining protocol data streams against explicit, predefined operational logic. They have evolved significantly across three technical eras.
-    </p>
+  <aside class="rail">
+    <div class="rail-brand">120-day cybersecurity roadmap // networking fundamentals iv</div>
+    <p class="rail-title">Day <span>10</span> — Firewalls &amp; Ports</p>
+    <nav>
+      <a href="#overview"><span class="n">00</span> Overview</a>
+      <a href="#osi"><span class="n">01</span> Where firewalls sit in the OSI stack</a>
+      <a href="#stateless"><span class="n">02</span> Stateless packet filtering</a>
+      <a href="#stateful"><span class="n">03</span> Stateful inspection</a>
+      <a href="#ngfw"><span class="n">04</span> Next-generation firewalls (Layer 7)</a>
+      <a href="#evolution"><span class="n">05</span> Why each generation exists</a>
+      <a href="#ports"><span class="n">06</span> Core ports &amp; service risk</a>
+      <a href="#scanning"><span class="n">07</span> Scan mechanics — connect vs SYN</a>
+      <a href="#states"><span class="n">08</span> Port state classifications</a>
+      <a href="#ufw"><span class="n">09</span> Host-based defense — UFW</a>
+      <a href="#matrix"><span class="n">10</span> SOC &amp; architecture perspectives</a>
+      <a href="#deliverables"><span class="n">11</span> Deliverables</a>
+      <a href="#troubleshoot"><span class="n">12</span> Troubleshooting UFW</a>
+      <a href="#cheatsheet"><span class="n">13</span> Cheat-sheet</a>
+      <a href="#nextsteps"><span class="n">14</span> Next steps</a>
+    </nav>
+    <div class="rail-meta">
+      <div><b>Tools:</b> Nmap, UFW / netfilter</div>
+      <div><b>Est. time:</b> 3–4 hrs</div>
+      <div><b>Leads into:</b> Day 11 — Nmap in depth</div>
+    </div>
+  </aside>
 
-    <div class="fw-diagram">
-        <div class="fw-node" style="background:#7f8c8d;">Untrusted Network<br><small>(Internet / Attacker)</small></div>
-        <div class="fw-barrier">FIREWALL WALL<br><small>Stateless / Stateful / Layer 7</small></div>
-        <div class="fw-node" style="background:#27ae60;">Trusted Enterprise Segment<br><small>(Internal Subnets / Hosts)</small></div>
+  <main>
+
+    <div class="hero">
+      <div class="hero-eyebrow">day 10 · networking fundamentals iv</div>
+      <h1>Firewalls &amp; Common Ports — <span class="accent">architecture</span>, exposure, and host hardening</h1>
+      <p class="lede">
+        Three generations of firewall technology, the ports that account for most real-world breaches, the
+        exact packet mechanics behind a port scan, and how to actually lock a Linux host down with UFW —
+        the blueprint underneath everything you'll scan, attack, or defend from here on.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">stateless / stateful / NGFW</span>
+        <span class="tag">OSI layers 3–7</span>
+        <span class="tag">common ports</span>
+        <span class="tag">SYN vs Connect scan</span>
+        <span class="tag">UFW / netfilter</span>
+      </div>
+
+      <div class="fw-flow">
+        <div class="fw-stage attacker">Untrusted network<br><small>internet / attacker</small></div>
+        <div class="fw-flow-arrow">→</div>
+        <div class="fw-stage barrier">🔥 firewall<br><small>stateless / stateful / L7</small></div>
+        <div class="fw-flow-arrow">→</div>
+        <div class="fw-stage trusted">Trusted segment<br><small>internal subnets / hosts</small></div>
+      </div>
     </div>
 
-    <h3>A. Stateless Packet Filtering (First Generation)</h3>
-    <p>
-        Operating exclusively at <strong>Layers 3 (Network) and 4 (Transport)</strong> of the OSI model, stateless filters analyze network frames in complete isolation. Each packet is processed on its individual merits, devoid of chronological background or memory context.
-    </p>
-    <ul>
-        <li><strong>Inspection Scope:</strong> Source IP, Destination IP, Source Port, Destination Port, and Protocol Type (TCP, UDP, ICMP).</li>
-        <li><strong>The Structural Vulnerability:</strong> Because stateless filters lack connection tracking mechanisms, they are entirely blind to transaction flows. For an internal client to download a file from an external web server, an engineer must configure static rules allowing return traffic from source ports 80/443 directly through to the internal segment. Attackers exploit this asymmetry by crafting raw packets containing spoofed source ports or anomalous flag combinations (e.g., unsolicited TCP ACK packets) to sail right past the static checklist.</li>
-    </ul>
+    <!-- 00 OVERVIEW -->
+    <section class="phase" id="overview">
+      <div class="phase-head">
+        <span class="phase-num">00</span>
+        <h2>Overview</h2>
+      </div>
+      <p class="phase-sub">A firewall is a trust-boundary enforcement mechanism, not a single product — three genuinely different technologies share the name.</p>
 
-    <h3>B. Stateful Inspection (Second Generation)</h3>
-    <p>
-        Stateful inspection bridges the contextual gap by actively monitoring the lifecycle of network transactions. It operates across Layers 3 and 4 but maintains an internal dynamic engine known as the <strong>State Table</strong> (Connection Tracking Engine).
-    </p>
-    <ul>
-        <li><strong>Mechanics:</strong> When an internal node triggers a connection request (e.g., sending a TCP SYN), the stateful firewall tracks the conversation's unique tuple details (IPs, Ports, Sequence Numbers, TCP States). </li>
-        <li><strong>Defensive Value:</strong> When the external entity replies, the firewall dynamically matches the incoming attributes against its active State Table. If the response matches an established or related connection flow, access is explicitly granted. Any unsolicited inbound traffic—such as an attacker probing a port or injecting an isolated segment out of sequence—is immediately dropped because no corresponding session footprint exists inside the tracking matrix.</li>
-    </ul>
+      <p>
+        A firewall enforces trust boundaries by controlling the ingress and egress traffic profile of a
+        system or network, examining traffic against explicit, predefined rules. The word "firewall" covers
+        three technically distinct generations of mechanism, and which generation you're dealing with
+        changes what it can see, what it can be tricked by, and how it should be configured. Today builds
+        that architecture up layer by layer, then grounds it in the actual ports you'll see in every scan
+        you ever run, and finishes with hands-on UFW configuration on a real host.
+      </p>
+    </section>
 
-    <h3>C. Next-Generation Firewalls (NGFW / Layer 7 Aware)</h3>
-    <p>
-        Adversaries quickly adapted to stateful boundaries by encapsulation, running malicious services, reverse shells, and malicious C2 command infrastructure over globally accepted structural tunnels like ports 80 (HTTP) and 443 (HTTPS). Next-Generation Firewalls mitigate this blindspot by expanding inspection capabilities all the way through the <strong>OSI Application Layer (Layer 7)</strong> using Deep Packet Inspection (DPI).
-    </p>
-    <ul>
-        <li><strong>Application Identification (App-ID):</strong> Evaluates the actual cryptographic payload patterns and binary structures to differentiate between authorized applications and unapproved tools masquerading or tunneling through safe ports (e.g., detecting Tor browser traffic hiding inside standard port 443 TLS streams).</li>
-        <li><strong>User Identity Context (User-ID):</strong> Integrates directly into domain engines (such as Active Directory) to assign behavioral policies directly to real-world security entities and groups rather than relying on ephemeral DHCP IP allocations.</li>
-        <li><strong>Inline Threat Prevention and TLS/SSL Decryption:</strong> Employs custom application-specific integrated circuits (ASICs) to scale real-time decryption proxies. The firewall handles certificate substitution dynamically to decrypt inbound/outbound encrypted streams, scanning for exploit signatures, zero-day behaviors, and active web vulnerabilities before data delivery occurs.</li>
-    </ul>
+    <!-- 01 OSI -->
+    <section class="phase" id="osi">
+      <div class="phase-head">
+        <span class="phase-num">01</span>
+        <h2>Where firewalls sit in the OSI stack</h2>
+      </div>
+      <p class="phase-sub">The single fact that explains every capability difference between the three generations below: how high up the stack each one actually looks.</p>
 
-    <h2>2. Core Network Ports & Service Vulnerabilities</h2>
-    <p>
-        Ports are logic structures mapping services to specific communication pathways, spanning values <code>0</code> through <code>65535</code>. Security teams categorize them to evaluate open exposures and prevent remote network attacks.
-    </p>
+      <div class="osi-stack">
+        <div class="osi-row dim"><span class="osi-num">8</span><span class="osi-name">— (not an OSI layer)</span><span class="osi-cov"></span></div>
+        <div class="osi-row l7 cov-ngfw"><span class="osi-num">7</span><span class="osi-name">Application</span><span class="osi-cov">NGFW only</span></div>
+        <div class="osi-row dim"><span class="osi-num">6</span><span class="osi-name">Presentation</span><span class="osi-cov"></span></div>
+        <div class="osi-row dim"><span class="osi-num">5</span><span class="osi-name">Session</span><span class="osi-cov"></span></div>
+        <div class="osi-row l4 cov-stateful"><span class="osi-num">4</span><span class="osi-name">Transport (TCP/UDP, ports)</span><span class="osi-cov">all three</span></div>
+        <div class="osi-row l3 cov-stateless"><span class="osi-num">3</span><span class="osi-name">Network (IP addresses)</span><span class="osi-cov">all three</span></div>
+        <div class="osi-row dim"><span class="osi-num">2</span><span class="osi-name">Data Link</span><span class="osi-cov"></span></div>
+        <div class="osi-row dim"><span class="osi-num">1</span><span class="osi-name">Physical</span><span class="osi-cov"></span></div>
+      </div>
 
-    <table class="port-table">
-        <thead>
-            <tr>
-                <th style="width: 10%;">Port</th>
-                <th style="width: 15%;">Protocol</th>
-                <th style="width: 25%;">Service Profile</th>
-                <th style="width: 50%;">Security Risks & Exploitation Engineering</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>21</strong></td>
-                <td>TCP</td>
-                <td>FTP (File Transfer)</td>
-                <td>Transmits credentials and infrastructure data in raw cleartext. Susceptible to passive snooping, brute-force vectors, and unauthorized anonymous traversal.</td>
-            </tr>
-            <tr>
-                <td><strong>22</strong></td>
-                <td>TCP</td>
-                <td>SSH (Secure Shell)</td>
-                <td>Secure administration endpoint. Heavily targeted by global brute-force engines. Risk includes cryptographic configuration drift (weak ciphers) and private key leakage.</td>
-            </tr>
-            <tr>
-                <td><strong>23</strong></td>
-                <td>TCP</td>
-                <td>Telnet</td>
-                <td>Legacy cleartext execution terminal. Completely unsafe over production segments. Credentials and running system streams can be immediately sniffed from packet captures.</td>
-            </tr>
-            <tr>
-                <td><strong>25</strong></td>
-                <td>TCP</td>
-                <td>SMTP (Simple Mail)</td>
-                <td>Mail delivery mechanics. Vulnerable to open relay configurations used for widespread spam campaigns and user enumeration exploits via legacy commands like <code>VRFY</code>.</td>
-            </tr>
-            <tr>
-                <td><strong>53</strong></td>
-                <td>UDP / TCP</td>
-                <td>DNS (Domain Name System)</td>
-                <td>UDP parses queries; TCP controls zone synchronization. Exploitation includes high-volume DNS Amplification DDoS vectors, local cache poisoning, and deep C2 Data Exfiltration Tunneling.</td>
-            </tr>
-            <tr>
-                <td><strong>80</strong></td>
-                <td>TCP</td>
-                <td>HTTP</td>
-                <td>Unencrypted web browsing traffic. Highly vulnerable to administrative intercept, session stealing, and deep layer web exploitation (SQLi, XSS, Command Injections).</td>
-            </tr>
-            <tr>
-                <td><strong>443</strong></td>
-                <td>TCP</td>
-                <td>HTTPS (TLS/SSL)</td>
-                <td>Secured web transportation. Heavily abused by adversaries to obscure C2 callbacks, evasion shell traffic, and malicious payloads behind standard encryption layers.</td>
-            </tr>
-            <tr>
-                <td><strong>445</strong></td>
-                <td>TCP</td>
-                <td>SMB (Server Message Block)</td>
-                <td>Windows network directory shares. **Extreme Risk System.** High-profile history for critical remote exploit vectors (e.g., EternalBlue). Must never be routed externally.</td>
-            </tr>
-            <tr>
-                <td><strong>3389</strong></td>
-                <td>TCP</td>
-                <td>RDP (Remote Desktop)</td>
-                <td>Windows graphic interface terminal. Heavily targeted by automated ransomware crews via authentication spray attacks or severe engine flaws (e.g., BlueKeep).</td>
-            </tr>
-        </tbody>
-    </table>
+      <p>
+        Every firewall generation reads Layers 3 and 4 — source/destination IP and port. The entire
+        evolution story in Phases 02–04 is about <strong>what gets added on top</strong>: first memory of
+        connection state, then visibility all the way up to Layer 7 where the actual application content
+        lives. Keep this picture in mind — it's the one mental model that makes "why is NGFW harder to evade
+        than stateful" click immediately.
+      </p>
+    </section>
 
-    <h2>3. Offensive Engineering: Analyzing Port Scanning Mechanics</h2>
-    <p>
-        Port scanning is the analytical practice of testing targeted structures to discover live assets and architectural version anomalies. Security testing operations use <strong>Nmap (Network Mapper)</strong> to map network spaces.
-    </p>
+    <!-- 02 STATELESS -->
+    <section class="phase" id="stateless">
+      <div class="phase-head">
+        <span class="phase-num">02</span>
+        <h2>Stateless packet filtering (first generation)</h2>
+      </div>
+      <p class="phase-sub">Layers 3–4 only, and — critically — no memory between packets.</p>
 
-    <div class="step-card">
-        <h4>A. Full TCP Connect Scan (<code>-sT</code>)</h4>
+      <p>
+        Stateless filters analyze each packet in complete isolation, with no record of what came before.
+        Each packet is judged purely on its own header fields:
+      </p>
+      <ul>
+        <li><strong>Inspection scope:</strong> source IP, destination IP, source port, destination port, protocol type (TCP/UDP/ICMP)</li>
+        <li><strong>The structural vulnerability:</strong> because there's no connection tracking, the filter cannot distinguish a legitimate reply to a request your own network made from an unsolicited packet crafted to look like one</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="callout-head">▸ the asymmetric-rule problem, concretely</div>
         <p>
-            Instructs the underlying operating system kernel to complete the textbook <strong>TCP Three-Way Handshake</strong> sequence with every tested port interface.
+          For an internal client to download a webpage, an engineer using a stateless filter has to write a
+          <em>static</em> rule permitting inbound traffic from source port 80/443 back into the internal
+          segment — because the filter has no way to know "this inbound packet is a reply to something we
+          asked for" versus "this inbound packet is unsolicited." That static rule is now permanently open,
+          whether or not your network actually has an active request in flight. An attacker can craft a raw
+          packet with source port 80 and an ACK flag set, and a stateless filter — having no session memory
+          to check it against — will wave it straight through, believing it's a legitimate reply.
         </p>
-        <ul>
-            <li><strong>Packet Flow:</strong> Attacker transmits <code>SYN</code> &rarr; Target responses <code>SYN-ACK</code> (Port Open) &rarr; Attacker transmits <code>ACK</code>. The connection is structurally built, and Nmap immediately closes the connection using a <code>RST</code> or <code>FIN</code> sequence.</li>
-            <li><strong>Security Assessment:</strong> It requires no special administrative host access to run, but it is incredibly <strong>noisy</strong>. Application log infrastructure immediately captures the completed session event, logging the source IP address.</li>
-        </ul>
-    </div>
+      </div>
 
-    <div class="step-card">
-        <h4>B. SYN Stealth / Half-Open Scan (<code>-sS</code>)</h4>
+      <div class="gem">
+        <div class="gem-icon">📄</div>
+        <div class="gem-body">
+          <div class="gem-label">reference — the original architecture</div>
+          <div class="gem-title">Cisco — "What Is a Firewall?" (technical overview)</div>
+          <p class="gem-why">
+            Cisco's own networking documentation walks through packet-filtering firewall mechanics with
+            vendor-neutral diagrams that hold up regardless of which platform you end up administering —
+            useful as the baseline reference before vendor-specific NGFW marketing material muddies the
+            picture later.
+          </p>
+          <a class="gem-link" href="https://www.cisco.com/site/us/en/learn/topics/security/what-is-a-firewall.html" target="_blank" rel="noopener">cisco.com — What Is a Firewall? ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 STATEFUL -->
+    <section class="phase" id="stateful">
+      <div class="phase-head">
+        <span class="phase-num">03</span>
+        <h2>Stateful inspection (second generation)</h2>
+      </div>
+      <p class="phase-sub">Same Layers 3–4 visibility, but now with memory of the conversation.</p>
+
+      <p>
+        Stateful inspection bridges the contextual gap stateless filtering leaves open by actively
+        monitoring the lifecycle of each network transaction, using an internal tracking structure usually
+        called the <strong>state table</strong> (or connection tracking table — <code class="inline">conntrack</code>
+        on Linux specifically).
+      </p>
+
+      <ol class="steps">
+        <li><strong>Outbound request initiates a tracked entry</strong>
+          When an internal host sends a TCP SYN, the firewall records the connection's full tuple — source/destination
+          IP, source/destination port, and current TCP state (SYN-SENT, ESTABLISHED, etc.) — into the state table.
+        </li>
+        <li><strong>Inbound reply is matched against that entry, not a static rule</strong>
+          When the external host replies, the firewall checks whether the reply's tuple matches an entry already
+          marked ESTABLISHED or RELATED in the table. If it matches, the packet is allowed through automatically —
+          no static "allow port 80 inbound" rule is needed at all.
+        </li>
+        <li><strong>Unsolicited traffic has nothing to match against</strong>
+          An attacker's spoofed ACK packet, or a probe against a port nobody asked anything from, finds no
+          corresponding entry in the state table and gets dropped — solving exactly the asymmetric-rule
+          problem from Phase 02, without leaving permanently-open static rules.
+        </li>
+      </ol>
+
+      <div class="callout note">
+        <div class="callout-head">▸ this is what your home router already does</div>
         <p>
-            The industry standard scanning method. It intentionally interrupts the network connection process before an application layer state connection registers on the target engine.
+          Stateful inspection is the default behavior of essentially every consumer router and Linux's
+          built-in <code class="inline">netfilter</code>/<code class="inline">iptables</code> framework (which
+          UFW configures in Phase 09) — it's why you can browse the web from behind a home router with zero
+          manual port-forwarding rules, but a port scan from outside still finds everything closed/filtered.
         </p>
-        <ul>
-            <li><strong>Packet Flow (Port Open):</strong> Attacker sends <code>SYN</code> &rarr; Target returns <code>SYN-ACK</code> &rarr; Attacker immediately fires a raw <code>RST</code> (Reset) frame to tear down the interaction instantly.</li>
-            <li><strong>Packet Flow (Port Closed):</strong> Attacker sends <code>SYN</code> &rarr; Target immediately returns <code>RST</code>.</li>
-            <li><strong>Security Assessment:</strong> Highly effective at flying below legacy application engine monitoring architectures. It requires administrative/root access privileges on the scanner machine to build and inject custom raw protocol packet headers.</li>
-        </ul>
-    </div>
+      </div>
+    </section>
 
-    <h3>Nmap State Classifications</h3>
-    <ul>
-        <li><strong>Open:</strong> An active application process is explicitly listening and responding to incoming connection attempts. This marks a target for vulnerability assessment.</li>
-        <li><strong>Closed:</strong> The target system returns a definitive <code>RST</code> response. The port is reachable, but no functional software service is bound to that socket.</li>
-        <li><strong>Filtered:</strong> Nmap cannot ascertain state details because its exploratory frames are silently dropped by intermediate boundary controls, preventing any return signals.</li>
-    </ul>
+    <!-- 04 NGFW -->
+    <section class="phase" id="ngfw">
+      <div class="phase-head">
+        <span class="phase-num">04</span>
+        <h2>Next-generation firewalls (Layer 7 aware)</h2>
+      </div>
+      <p class="phase-sub">Stateful inspection knows <em>who's talking to whom</em>. NGFW asks what they're actually saying.</p>
 
-    <div class="code-box">
-<span class="comment"># Execute a stealth SYN version scan (-sV) evaluating standard system components</span>
-sudo nmap -sS -sV 192.168.1.100
+      <p>
+        Adversaries adapted to stateful boundaries by tunneling malicious traffic — reverse shells, C2
+        check-ins — over the ports that are always open by necessity: 80 and 443. A stateful firewall sees
+        "established TCP connection to port 443" and allows it, because that's indistinguishable at Layers
+        3–4 from a person checking their email. NGFWs close this gap with <strong>Deep Packet Inspection
+        (DPI)</strong>, reading further up the stack into Layer 7 — the actual application content.
+      </p>
 
-<span class="comment"># Evaluate all 65,535 ports to find hidden infrastructure endpoints</span>
-sudo nmap -p- 192.168.1.100
+      <div class="grid2">
+        <div class="card">
+          <h4>Application identification (App-ID)</h4>
+          <p>Looks at payload behavior patterns — packet timing, TLS handshake fingerprints (e.g. JA3-style
+          client fingerprinting), and protocol-specific signatures — to identify what application is
+          actually generating the traffic, regardless of which port it's running over.</p>
+        </div>
+        <div class="card">
+          <h4>User identity context (User-ID)</h4>
+          <p>Integrates with directory services like Active Directory to bind policy to a real user/group
+          identity rather than a DHCP-assigned IP that could belong to anyone at any given moment.</p>
+        </div>
+        <div class="card">
+          <h4>TLS/SSL interception</h4>
+          <p>The firewall acts as a man-in-the-middle by design: it terminates the client's TLS connection,
+          inspects the plaintext, then re-encrypts before forwarding to the real destination — substituting
+          its own certificate, trusted because it's pushed to managed endpoints in advance.</p>
+        </div>
+        <div class="card">
+          <h4>Inline threat prevention</h4>
+          <p>Scans decrypted content for known exploit signatures and anomalous behavior before the data
+          ever reaches the destination host — closer to an IDS/IPS folded directly into the firewall path.</p>
+        </div>
+      </div>
 
-<span class="comment"># Run aggressive diagnostics (-A) including script engines, OS fingerprints, and routing trace paths</span>
-sudo nmap -A 192.168.1.100</div>
-
-<h2>4. Defensive Engineering: Host-Based Firewall Control (UFW)</h2>
-<p>
-    Network boundaries are insufficient when attackers breach subnets via phishing or edge exploits. Host-based defenses stop lateral escalation. Linux systems leverage <strong>UFW (Uncomplicated Firewall)</strong> as a management layer for internal kernel-level netfilter operations.
-</p>
-
-    <div class="step-card">
-        <h4>Step 1: Establishing a Zero-Trust Baseline Posture</h4>
-        <p>A secure defense baseline requires a strict <strong>Default Deny</strong> orientation. Block all inbound paths completely until explicitly allowed for functional verification.</p>
-        <div class="code-box">
-<span class="comment"># Evaluate active configuration state details</span>
-sudo ufw status verbose
-
-<span class="comment"># Restructure global access profiles</span>
-sudo ufw default deny incoming
-sudo ufw default allow outgoing</div>
-    </div>
-
-    <div class="step-card">
-        <h4>Step 2: Configuring Safe Administration and Application Paths</h4>
-        <p>Define rules clearly to minimize exposure windows and prevent administrative lockouts.</p>
-        <div class="code-box">
-<span class="comment"># Define SSH port paths explicitly on the TCP layer</span>
-sudo ufw allow 22/tcp
-
-<span class="comment"># Permit localized web services via system application parameters</span>
-sudo ufw allow http
-sudo ufw allow https</div>
-    </div>
-
-    <div class="step-card">
-        <h4>Step 3: Implementing Granular Network Restrictions</h4>
-        <p>Hardening sensitive backend systems (like analytical tools or data stores) requires restricting access to verified sources.</p>
-        <div class="code-box">
-<span class="comment"># Allow admin connection to SSH ONLY from a designated bastion workstation IP</span>
-sudo ufw allow from 203.0.113.42 to any port 22 proto tcp
-
-<span class="comment"># Open standard SQL endpoints (MySQL 3306) exclusively for a verified internal subnet</span>
-sudo ufw allow from 192.168.10.0/24 to any port 3306 proto tcp
-
-<span class="comment"># Drop all traffic from an IP identified as engaging in active reconnaissance</span>
-sudo ufw deny from 198.51.100.77 to any</div>
-    </div>
-
-    <div class="step-card">
-        <h4>Step 4: Activation and Rule Integrity Audits</h4>
-        <p>Commit configurations and verify table alignments.</p>
-        <div class="code-box">
-<span class="comment"># Activate the firewall engine and enable persistence features across boots</span>
-sudo ufw enable
-
-<span class="comment"># Display the active running list with rule-index assignments</span>
-sudo ufw status numbered</div>
-    </div>
-
-    <h2>5. Defensive Matrix for Security Operations</h2>
-    
-    <div class="matrix-box">
-        <h4>SOC Analyst & Threat Hunter Perspective</h4>
+      <div class="callout warn">
+        <div class="callout-head">▸ a precision correction worth making explicitly</div>
         <p>
-            When monitoring network streams or system event data, look out for <strong>Port Misuse Anomalies</strong> (e.g., standard protocols routed across non-standard channels like SSH executing inside port 80 blocks). Rapid, sequential drop events generated by a singular external IP against multiple destination ports signal an active **port scan**. Sudden bursts of dropped outbound connection requests from an internal server indicate a potential system compromise attempting to locate command-and-control nodes.
+          TLS interception at scale is genuinely demanding — high-end appliance NGFWs often use dedicated
+          ASICs or hardware crypto accelerators to do it without crushing throughput, but that's a
+          <em>performance</em> detail of certain hardware tiers, not a defining requirement of NGFW
+          technology itself. Plenty of NGFW deployments (including most software/cloud-based ones) do TLS
+          inspection entirely in software. Don't treat "ASIC-accelerated" as a universal NGFW property —
+          it's an implementation choice some vendors make at certain price points.
         </p>
-    </div>
+      </div>
 
-    <div class="matrix-box" style="border-left-color: #2980b9; background-color: #ebf5fb;">
-        <h4 style="color: #2471a3;">Security Architecture & Engineering Perspective</h4>
+      <p>
+        How App-ID actually catches something like Tor hidden inside port 443: Tor's TLS handshake has
+        observable fingerprint characteristics (certificate patterns, cipher suite ordering, traffic timing)
+        that differ subtly from ordinary browser-to-website TLS, even though both are "port 443, encrypted."
+        NGFW signature databases are built specifically to catalog these distinguishing fingerprints across
+        thousands of known applications and tunneling tools.
+      </p>
+
+      <div class="gem">
+        <div class="gem-icon">📄</div>
+        <div class="gem-body">
+          <div class="gem-label">reference — TLS interception, the honest tradeoffs</div>
+          <div class="gem-title">NSA / CISA — "Managing Risk from Transport Layer Security Inspection"</div>
+          <p class="gem-why">
+            A genuinely balanced government advisory on what TLS-intercepting middleboxes (the exact NGFW
+            mechanism described above) get right and where they introduce new risk — a weakened CA trust
+            chain, potential downgrade of negotiated cipher strength, and traffic mishandling once decrypted
+            — instead of the usual one-sided vendor framing. Worth reading specifically because it argues
+            against blanket deployment in places, which most firewall vendor content never does.
+          </p>
+          <a class="gem-link" href="https://www.cisa.gov/uscert/ncas/current-activity/2019/11/19/nsa-releases-cyber-advisory-managing-risk-transport-layer-security" target="_blank" rel="noopener">cisa.gov — NSA TLS inspection advisory ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 EVOLUTION -->
+    <section class="phase" id="evolution">
+      <div class="phase-head">
+        <span class="phase-num">05</span>
+        <h2>Why each generation exists — the arms race in one table</h2>
+      </div>
+      <p class="phase-sub">Every generation exists because attackers found the blind spot in the previous one.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Generation</th><th>What it sees</th><th>The gap that forced the next generation</th></tr></thead>
+          <tbody>
+            <tr><td>Stateless</td><td>IP + port, per packet, no memory</td><td>Can't distinguish a real reply from a spoofed one — forces permanently-open static rules</td></tr>
+            <tr><td>Stateful</td><td>IP + port + connection lifecycle</td><td>Can't see inside an allowed, established connection — attackers tunnel C2 traffic through ports 80/443</td></tr>
+            <tr><td>NGFW (Layer 7)</td><td>Actual application identity inside the allowed connection</td><td>Still has to keep up with an ever-growing signature database and new evasion fingerprints — an arms race that never fully closes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ no generation makes the previous one obsolete</div>
         <p>
-            Implement complete internal <strong>Micro-segmentation</strong>. Do not rely exclusively on perimeter defenses; use host-level boundary configurations (such as UFW) to separate endpoint ranges, staging profiles, and core databases. Run continuous automated internal and external Nmap scan sweeps. Finding an unauthorized open port early allows you to remediate systemic misconfigurations before malicious reconnaissance teams exploit the attack surface.
+          A real-world NGFW deployment still does stateful inspection underneath — Layer 7 awareness is
+          additive, not a replacement. When you configure UFW in Phase 09 today, you're working at the
+          stateful generation; that's the right and sufficient layer for a single host, while NGFW logic
+          typically lives at the network perimeter, not on every endpoint.
         </p>
-    </div>
+      </div>
+    </section>
+
+    <!-- 06 PORTS -->
+    <section class="phase" id="ports">
+      <div class="phase-head">
+        <span class="phase-num">06</span>
+        <h2>Core network ports &amp; service risk</h2>
+      </div>
+      <p class="phase-sub">A handful of ports account for a disproportionate share of real-world findings — know these cold.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Port</th><th>Proto</th><th>Service</th><th>Risk</th><th>Security risk &amp; exploitation context</th></tr></thead>
+          <tbody>
+            <tr><td><strong>21</strong></td><td>TCP</td><td>FTP</td><td><span class="pill high">High</span></td><td>Credentials and data sent in cleartext — passively sniffable. Susceptible to brute-force and anonymous-access misconfiguration.</td></tr>
+            <tr><td><strong>22</strong></td><td>TCP</td><td>SSH</td><td><span class="pill med">Medium</span></td><td>Encrypted by design, but heavily targeted by global brute-force scanning. Risk shifts to weak ciphers, password auth left enabled, and private key leakage/reuse.</td></tr>
+            <tr><td><strong>23</strong></td><td>TCP</td><td>Telnet</td><td><span class="pill crit">Critical</span></td><td>Entirely cleartext remote shell — credentials and full session content readable from any packet capture on the path. No legitimate reason to run this in 2026 outside legacy embedded gear.</td></tr>
+            <tr><td><strong>25</strong></td><td>TCP</td><td>SMTP</td><td><span class="pill med">Medium</span></td><td>Open relay misconfiguration enables spam abuse at scale. Legacy commands like <code class="inline">VRFY</code> can enable username enumeration against the mail server.</td></tr>
+            <tr><td><strong>53</strong></td><td>UDP/TCP</td><td>DNS</td><td><span class="pill high">High</span></td><td>UDP for queries, TCP for zone transfers. Enables DNS amplification DDoS (see Phase 06 callout below), cache poisoning, and is a common covert C2/data-exfiltration channel via DNS tunneling.</td></tr>
+            <tr><td><strong>80</strong></td><td>TCP</td><td>HTTP</td><td><span class="pill high">High</span></td><td>Unencrypted — traffic interception, session token theft, and the full surface of web app vulnerabilities (SQLi, XSS, command injection) layer on top of this transport.</td></tr>
+            <tr><td><strong>443</strong></td><td>TCP</td><td>HTTPS</td><td><span class="pill med">Medium</span></td><td>Encrypted transport, but precisely <em>because</em> it's encrypted and always allowed outbound, it's the favored channel for C2 callbacks and exfiltration — see the NGFW discussion in Phase 04.</td></tr>
+            <tr><td><strong>445</strong></td><td>TCP</td><td>SMB</td><td><span class="pill crit">Critical</span></td><td>Windows file/print sharing. History of severe remote-code-execution flaws (EternalBlue/MS17-010 — see callout). Should essentially never be reachable from outside a trusted internal segment.</td></tr>
+            <tr><td><strong>3389</strong></td><td>TCP</td><td>RDP</td><td><span class="pill crit">Critical</span></td><td>Windows remote desktop. Among the most common initial-access vectors for ransomware — credential spraying against internet-exposed RDP, and historical flaws like BlueKeep (see callout).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ how DNS amplification actually works, in one paragraph</div>
+        <p>
+          An attacker sends a small DNS query to an open resolver, but spoofs the source IP to be the
+          victim's address. The resolver — doing exactly what DNS resolvers are supposed to do — sends its
+          (much larger) response to the spoofed address, not back to the attacker. A small request becomes a
+          large flood landing on someone who never asked for it, and the attacker's own IP never appears
+          anywhere in the traffic the victim sees. This single mechanism is why "open DNS resolver" is
+          treated as a finding worth fixing even when nothing else about the DNS config looks wrong.
+        </p>
+      </div>
+
+      <div class="gem">
+        <div class="gem-icon">📄</div>
+        <div class="gem-body">
+          <div class="gem-label">reference — EternalBlue / MS17-010, written up properly</div>
+          <div class="gem-title">Microsoft — Security Bulletin MS17-010 (Critical)</div>
+          <p class="gem-why">
+            The original vendor bulletin for the SMBv1 vulnerability behind EternalBlue and the WannaCry/NotPetya
+            outbreaks — worth reading in primary form once, since nearly every secondary summary simplifies
+            away the actual affected-protocol-version detail (SMBv1 specifically, not SMB as a whole) that
+            matters when you're deciding what to actually disable on a real network.
+          </p>
+          <a class="gem-link" href="https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010" target="_blank" rel="noopener">learn.microsoft.com — MS17-010 bulletin ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 SCANNING -->
+    <section class="phase" id="scanning">
+      <div class="phase-head">
+        <span class="phase-num">07</span>
+        <h2>Scan mechanics — Connect vs SYN, packet by packet</h2>
+      </div>
+      <p class="phase-sub">Port scanning is the analytical practice of probing a target to discover live services — here's exactly what's on the wire for the two foundational techniques.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>-sT — Full TCP Connect scan</h4>
+          <p>Completes the textbook three-way handshake on every probed port:</p>
+          <ul>
+            <li>Attacker → SYN</li>
+            <li>Target → SYN-ACK (port open) or RST (closed)</li>
+            <li>Attacker → ACK, then immediately RST/FIN to tear down</li>
+          </ul>
+          <p>Requires no special privileges — it's just the OS's normal socket connect() call. But because a
+          full connection is established, it's logged by the target's normal application-layer connection
+          logging, every time.</p>
+        </div>
+        <div class="card">
+          <h4>-sS — SYN / half-open scan</h4>
+          <p>Deliberately interrupts the handshake before a full session registers:</p>
+          <ul>
+            <li>Attacker → SYN</li>
+            <li>Target → SYN-ACK (open) or RST (closed)</li>
+            <li>Attacker → RST immediately (open case) — never sends the final ACK</li>
+          </ul>
+          <p>Requires root/admin privileges, since crafting a raw packet that deviates from the OS's normal
+          TCP state machine needs raw socket access. Many applications never see this at the connection-log
+          level since no session was ever fully established.</p>
+        </div>
+      </div>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># stealth SYN scan with version detection against common services</span>
+<span class="prompt">$</span> sudo nmap -sS -sV <span class="var">192.168.1.100</span>
+
+<span class="c"># evaluate every one of the 65,535 ports — slow, thorough</span>
+<span class="prompt">$</span> sudo nmap -p- <span class="var">192.168.1.100</span>
+
+<span class="c"># aggressive sweep: OS fingerprint, NSE default scripts, traceroute</span>
+<span class="prompt">$</span> sudo nmap -A <span class="var">192.168.1.100</span></pre>
+      </div>
+
+      <div class="callout note">
+        <div class="callout-head">▸ "stealthier" is a relative, not absolute, claim</div>
+        <p>
+          A SYN scan avoids <em>application-layer</em> connection logs because no full session forms. It
+          does not avoid detection at the network layer — any firewall or IDS watching raw packet flow (the
+          stateful/NGFW devices from Phases 03–04) sees the exact same pattern either way: rapid SYNs across
+          many ports with no legitimate follow-through. The "stealth" in SYN scan refers to a specific,
+          narrower blind spot, not invisibility.
+        </p>
+      </div>
+    </section>
+
+    <!-- 08 PORT STATES -->
+    <section class="phase" id="states">
+      <div class="phase-head">
+        <span class="phase-num">08</span>
+        <h2>Port state classifications</h2>
+      </div>
+      <p class="phase-sub">Three words, three completely different stories about what's actually happening on the target.</p>
+
+      <ul>
+        <li><strong>Open</strong> — an active process is listening and responded affirmatively. This is real, present attack surface, and the starting point for any vulnerability assessment of that service.</li>
+        <li><strong>Closed</strong> — the target returned a definitive RST. The host is reachable and the network path works, but nothing is bound to that specific port right now.</li>
+        <li><strong>Filtered</strong> — Nmap's probe was silently dropped by an intermediate device, with no RST and no SYN-ACK returned. You genuinely don't know if a service is there; the firewall is hiding the answer, not the host itself.</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-head">▸ filtered is a question, not an answer</div>
+        <p>
+          Closed tells you something definite. Filtered tells you a firewall is in the way and nothing more
+          — it's worth a second probe (different scan type, different timing, a different source port) before
+          you conclude there's nothing of interest behind it.
+        </p>
+      </div>
+    </section>
+
+    <!-- 09 UFW -->
+    <section class="phase" id="ufw">
+      <div class="phase-head">
+        <span class="phase-num">09</span>
+        <h2>Defensive engineering — host-based firewall control with UFW</h2>
+      </div>
+      <p class="phase-sub">Network perimeter defenses are insufficient once an attacker is already inside a subnet via phishing or an edge exploit — host-level rules stop lateral movement.</p>
+
+      <p>
+        UFW (Uncomplicated Firewall) is a friendlier management layer over Linux's kernel-level
+        <code class="inline">netfilter</code> framework — the same stateful packet-filtering engine
+        described in Phase 03, just running on a single host instead of at a network perimeter.
+      </p>
+
+      <h3><span class="h3-mark">①</span> Establish a zero-trust baseline</h3>
+      <p>A secure default starts from deny-everything-inbound, then explicitly allows only what's needed.</p>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># check the current state before changing anything</span>
+<span class="prompt">$</span> sudo ufw status verbose
+
+<span class="c"># set the global default posture</span>
+<span class="prompt">$</span> sudo ufw default deny incoming
+<span class="prompt">$</span> sudo ufw default allow outgoing</pre>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-head">▸ set your SSH allow rule before enabling — every time</div>
+        <p>
+          If you're connected over SSH and run <code class="inline">ufw default deny incoming</code> followed
+          immediately by <code class="inline">ufw enable</code> without first allowing your SSH port, you
+          will lock yourself out of a remote box the instant the rule applies. Always add the SSH allow rule
+          (Step 2 below) <em>before</em> running <code class="inline">ufw enable</code>, and double-check it
+          on a remote host before disconnecting.
+        </p>
+      </div>
+
+      <h3><span class="h3-mark">②</span> Configure safe administration and application paths</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># explicit SSH allow — do this before enabling, see warning above</span>
+<span class="prompt">$</span> sudo ufw allow 22/tcp
+
+<span class="c"># permit standard web service ports via named application profiles</span>
+<span class="prompt">$</span> sudo ufw allow http
+<span class="prompt">$</span> sudo ufw allow https</pre>
+      </div>
+
+      <h3><span class="h3-mark">③</span> Granular network restrictions</h3>
+      <p>Hardening sensitive backend services means restricting access to specific known sources, not opening them to any address.</p>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># SSH only from one designated administration workstation</span>
+<span class="prompt">$</span> sudo ufw allow from <span class="var">203.0.113.42</span> to any port 22 proto tcp
+
+<span class="c"># MySQL reachable only from a specific internal subnet</span>
+<span class="prompt">$</span> sudo ufw allow from <span class="var">192.168.10.0/24</span> to any port 3306 proto tcp
+
+<span class="c"># explicitly drop a known-hostile source</span>
+<span class="prompt">$</span> sudo ufw deny from <span class="var">198.51.100.77</span> to any</pre>
+      </div>
+
+      <h3><span class="h3-mark">④</span> Activate and audit</h3>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">bash</span></div>
+        <pre><span class="c"># turn it on — persists across reboots automatically</span>
+<span class="prompt">$</span> sudo ufw enable
+
+<span class="c"># review the active rule set with numbered indices, for easy deletion later</span>
+<span class="prompt">$</span> sudo ufw status numbered</pre>
+      </div>
+
+      <div class="gem">
+        <div class="gem-icon">📄</div>
+        <div class="gem-body">
+          <div class="gem-label">reference — UFW, straight from the source</div>
+          <div class="gem-title">DigitalOcean — "UFW Essentials: Common Firewall Rules and Commands"</div>
+          <p class="gem-why">
+            One of the most consistently accurate, vendor-neutral UFW references — kept current, covers
+            IPv6 duplication of rules (a common gap people miss), application profiles, and logging, beyond
+            what fits in today's lesson.
+          </p>
+          <a class="gem-link" href="https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands" target="_blank" rel="noopener">digitalocean.com — UFW essentials ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 MATRIX -->
+    <section class="phase" id="matrix">
+      <div class="phase-head">
+        <span class="phase-num">10</span>
+        <h2>SOC &amp; architecture perspectives</h2>
+      </div>
+      <p class="phase-sub">The same firewall data, read for two different jobs.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>SOC Analyst / Threat Hunter</h4>
+          <p>Watch for <strong>port-misuse anomalies</strong> — a protocol running on a non-standard port for
+          it (SSH traffic appearing inside what should be port-80 flows, for instance). Rapid sequential drop
+          events from a single external IP against many destination ports is the classic signature of an
+          active port scan in progress. Sudden bursts of <em>outbound</em> connection attempts being dropped
+          from an internal server can indicate a compromised host trying to reach a C2 node that's since been
+          blocked or doesn't exist.</p>
+        </div>
+        <div class="card">
+          <h4>Security Architecture / Engineering</h4>
+          <p>Implement <strong>micro-segmentation</strong> rather than relying solely on perimeter defense —
+          host-level rules (UFW, from Phase 09) separate endpoint ranges, staging environments, and core
+          databases from each other, so a single compromised host doesn't grant lateral access to everything.
+          Run continuous, scheduled Nmap sweeps against your own internal and external ranges — finding an
+          unexpected open port during a routine internal audit is dramatically cheaper than finding it after
+          an incident.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 DELIVERABLES -->
+    <section class="phase" id="deliverables">
+      <div class="phase-head">
+        <span class="phase-num">11</span>
+        <h2>Deliverables</h2>
+      </div>
+      <p class="phase-sub">Turn today's reading into a working, auditable configuration.</p>
+
+      <div class="deliverables">
+        <h4>Suggested files for today</h4>
+        <div class="file-item">day10_firewall_notes.md</div>
+        <div class="file-item">day10_ufw_status.txt</div>
+        <div class="file-item">day10_ufw_rules_numbered.txt</div>
+      </div>
+
+      <p>In <code class="inline">day10_firewall_notes.md</code>, capture at minimum:</p>
+      <ul class="checklist">
+        <li><span class="box"></span><span>One paragraph each on stateless, stateful, and NGFW firewalls — in your own words, including what each one is structurally blind to</span></li>
+        <li><span class="box"></span><span>A table of the ports you consider highest-risk in your own home lab, and why</span></li>
+        <li><span class="box"></span><span>The actual UFW ruleset you configured on a real VM, with the output of <code class="inline">ufw status numbered</code></span></li>
+        <li><span class="box"></span><span>One sentence explaining the difference in what a SYN scan and a Connect scan each leave behind in logs</span></li>
+      </ul>
+
+      <div class="term">
+        <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-label">git</span></div>
+        <pre><span class="prompt">$</span> git add day10_firewall_notes.md day10_ufw_status.txt day10_ufw_rules_numbered.txt
+<span class="prompt">$</span> git commit -m <span class="var">"Day 10: firewall architecture, common ports, and UFW hardening"</span>
+<span class="prompt">$</span> git push</pre>
+      </div>
+    </section>
+
+    <!-- 12 TROUBLESHOOTING -->
+    <section class="phase" id="troubleshoot">
+      <div class="phase-head">
+        <span class="phase-num">12</span>
+        <h2>Troubleshooting UFW</h2>
+      </div>
+      <p class="phase-sub">The mistakes that actually happen during this exact lab.</p>
+
+      <details class="trouble" open>
+        <summary>Locked out of a remote VM immediately after running ufw enable</summary>
+        <div class="trouble-body">
+          <p>This is the single most common UFW mistake — see the danger callout in Phase 09. If you still
+          have console/hypervisor access (e.g. the VirtualBox GUI console, not SSH), log in directly and run
+          <code class="inline">sudo ufw allow 22/tcp</code> then <code class="inline">sudo ufw reload</code>.
+          If you have no console access at all, you may need to use your cloud provider's serial/recovery
+          console to fix the rule remotely.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>ufw status shows "inactive" even after running ufw enable</summary>
+        <div class="trouble-body">
+          <p>Confirm you actually ran <code class="inline">sudo ufw enable</code> and answered "y" to the
+          confirmation prompt — it's easy to run the command, get the disruption warning, and not realize the
+          prompt needs a response. Re-run <code class="inline">sudo ufw status verbose</code> immediately
+          after to confirm state actually changed.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>Rules for an IP range don't seem to apply as expected</summary>
+        <div class="trouble-body">
+          <p>Check rule <em>order</em> with <code class="inline">sudo ufw status numbered</code> — UFW (like
+          the underlying netfilter rules) evaluates top to bottom and stops at the first match. A broad
+          <code class="inline">allow</code> rule placed above a more specific <code class="inline">deny</code>
+          rule for the same traffic will win, even if the deny rule looks more specific on paper.</p>
+        </div>
+      </details>
+
+      <details class="trouble">
+        <summary>IPv6 traffic seems to bypass rules written for an IPv4 address</summary>
+        <div class="trouble-body">
+          <p>UFW rules targeting a specific IPv4 address or range have no effect on IPv6 traffic — they're
+          entirely separate rule sets. If the host has IPv6 enabled and reachable, you need a parallel rule
+          for the IPv6 equivalent, or disable IPv6 entirely if it's not in use, per the DigitalOcean reference
+          in Phase 09.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- 13 CHEAT SHEET -->
+    <section class="phase" id="cheatsheet">
+      <div class="phase-head">
+        <span class="phase-num">13</span>
+        <h2>Command cheat-sheet</h2>
+      </div>
+      <p class="phase-sub">The whole day, one table.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">nmap -sT &lt;target&gt;</code></td><td>Full connect scan — no root needed, logged at application layer</td></tr>
+            <tr><td><code class="inline">nmap -sS &lt;target&gt;</code></td><td>SYN/half-open scan — needs root, skips app-layer logs</td></tr>
+            <tr><td><code class="inline">nmap -p- &lt;target&gt;</code></td><td>Scan all 65,535 ports</td></tr>
+            <tr><td><code class="inline">nmap -A &lt;target&gt;</code></td><td>OS detection + default scripts + traceroute</td></tr>
+            <tr><td><code class="inline">sudo ufw status verbose</code></td><td>Show current UFW state and default policies</td></tr>
+            <tr><td><code class="inline">sudo ufw default deny incoming</code></td><td>Set zero-trust inbound baseline</td></tr>
+            <tr><td><code class="inline">sudo ufw allow 22/tcp</code></td><td>Allow SSH — do this before enabling, always</td></tr>
+            <tr><td><code class="inline">sudo ufw allow from &lt;ip&gt; to any port &lt;n&gt;</code></td><td>Restrict a port to one specific source</td></tr>
+            <tr><td><code class="inline">sudo ufw deny from &lt;ip&gt;</code></td><td>Block a specific known-hostile address entirely</td></tr>
+            <tr><td><code class="inline">sudo ufw enable</code></td><td>Activate the firewall, persists across reboots</td></tr>
+            <tr><td><code class="inline">sudo ufw status numbered</code></td><td>Audit active rules with index numbers for deletion</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 14 NEXT STEPS -->
+    <section class="phase" id="nextsteps" style="border-bottom:none;">
+      <div class="phase-head">
+        <span class="phase-num">14</span>
+        <h2>Next steps</h2>
+      </div>
+      <p class="phase-sub">Where today's architecture gets put into practice.</p>
+
+      <p>
+        Day 11 hands you Nmap as a hands-on tool against a deliberately vulnerable target — and you'll now
+        recognize <em>why</em> a SYN scan behaves the way it does, why certain ports (445, 3389, 21, 23) are
+        flagged immediately as high-risk the moment they show open, and what a "filtered" result actually
+        implies about a firewall sitting between you and the truth. The UFW configuration you built today is
+        also exactly the kind of host hardening you'll be expected to verify or break through in later red
+        team and blue team exercises.
+      </p>
+    </section>
+
+    <footer>
+      <span>Day 10 / 120-day cybersecurity learning roadmap</span>
+      <span>Stateless · Stateful · NGFW · UFW / netfilter</span>
+    </footer>
+
+  </main>
 </div>
 
 </body>
